@@ -38,3 +38,15 @@ export interface CourseStats {
   course_id: string; subject_count: number; lecture_count: number; total_duration_seconds: number;
   free_preview_count: number; test_count: number; free_test_count: number;
 }
+
+export interface Question {
+  id: string; exam_id: string; topic_id: string; group_id: string | null; type: QuestionType; difficulty: Difficulty;
+  stem: string; marks: number; negative_marks: number; is_pyq: boolean; pyq_year: number | null; pyq_paper: string | null;
+  is_free_practice: boolean; status: ContentStatus; created_at: string; updated_at: string;
+}
+export interface QuestionOption { id: string; question_id: string; label: string; content: string; position: number }
+export interface QuestionKey {
+  question_id: string; correct_option_ids: string[] | null; nat_min: number | null; nat_max: number | null;
+  tita_answer: string | null; explanation: string | null;
+}
+export interface QuestionGroup { id: string; exam_id: string; title: string; content: string }
