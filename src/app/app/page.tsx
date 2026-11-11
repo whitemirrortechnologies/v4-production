@@ -85,6 +85,16 @@ export default async function Dashboard() {
           </div>
         </section>
 
+        <section className="mx-auto max-w-[90rem] px-4 pt-10 sm:px-10">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[["/courses", "Courses", "Browse every course"], ["/app/practice", "Practice", "Topic-wise questions with solutions"], ["/app/tests", "Tests", "Mocks under real exam conditions"]].map(([href, t, d]) => (
+              <Link key={href} href={href} className="group flex items-center justify-between rounded-2xl border border-line p-5 transition-colors hover:bg-wash">
+                <span><span className="block font-semibold">{t}</span><span className="text-sm text-ink-3">{d}</span></span><Arrow className="text-ink-3 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
           <div className="flex items-end justify-between gap-4">
             <h2 className="h2">My courses</h2>

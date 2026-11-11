@@ -13,6 +13,7 @@ const LINKS = [
   { href: "/exams", label: "Exams" },
   { href: "/courses", label: "Courses" },
   { href: "/app/practice", label: "Practice" },
+  { href: "/app/tests", label: "Tests" },
 ];
 
 export function HeaderClient({ name, signedIn, staff }: { name: string; signedIn: boolean; staff: boolean }) {
