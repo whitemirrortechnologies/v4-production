@@ -19,7 +19,7 @@ Decisions reflected here:
   enrollments.
 - **Test attempts:** the admin sets `max_attempts` per test (null = unlimited). Rank and percentile
   always use each student's first attempt.
-- **Validity:** set per product, either a number of days or a fixed end date (e.g. after GATE 2027),
+- **Validity:** set per product, either a number of days or a fixed end date (e.g. after CAT 2027),
   or lifetime.
 - **Included from day one:** coupons, bundles, lecture doubts/Q&A, question error reports.
 - **Free vs paid is decided by the admin.** Nothing is free by default:
@@ -77,13 +77,13 @@ Decisions reflected here:
 ### `exams`
 | Column | Type | Notes |
 |---|---|---|
-| code | text unique | `GATE_CS`, `CAT` (a table rather than an enum, so `GATE_DA` etc. can be added later) |
-| name | text | "GATE Computer Science & IT" |
+| code | text unique | `CAT` (a table rather than an enum, so other exams can be added later) |
+| name | text | "CAT" |
 | description | text | |
 | is_active | bool | |
 | position | int | |
 
-### `syllabus_sections`: GATE subjects / CAT sections
+### `syllabus_sections`: CAT sections (VARC, DILR, QA)
 | Column | Type | Notes |
 |---|---|---|
 | exam_id | uuid → exams | |
@@ -99,7 +99,7 @@ Decisions reflected here:
 | slug | text | unique per section |
 | position | int | |
 
-Seeded with the official GATE CS/IT and CAT syllabi.
+Seeded with the official CAT syllabus.
 
 ---
 
@@ -109,7 +109,7 @@ Seeded with the official GATE CS/IT and CAT syllabi.
 | Column | Type | Notes |
 |---|---|---|
 | exam_id | uuid → exams | |
-| slug | text unique | URL: `/courses/algorithms-for-gate-cs` |
+| slug | text unique | URL: `/courses/quant-arithmetic-core` |
 | title, subtitle | text | |
 | description | text | Markdown |
 | thumbnail_path | text null | Storage `thumbnails/` (public) |
@@ -195,7 +195,7 @@ Courses can also bundle tests (`course_tests`), so buying the course unlocks the
 ### `coupons` (admin only)
 | Column | Type | Notes |
 |---|---|---|
-| code | citext unique | e.g. `GATE50`, case-insensitive |
+| code | citext unique | e.g. `CAT50`, case-insensitive |
 | description | text | internal note |
 | discount_type | discount_type | |
 | discount_value | int | percent (1–100) or paise |
@@ -254,7 +254,7 @@ it's free, in a purchased series, or in a purchased course.
 
 ## 5. Question bank
 
-### `question_groups`: shared passage / data set (CAT RC & DILR, GATE common-data)
+### `question_groups`: shared passage / data set (CAT RC & DILR)
 | Column | Type | Notes |
 |---|---|---|
 | exam_id | uuid → exams | |
@@ -271,12 +271,12 @@ it's free, in a purchased series, or in a purchased course.
 | type | question_type | |
 | difficulty | difficulty | |
 | stem | text | Markdown + KaTeX. Images in Storage `question-media/` |
-| marks | numeric(4,2) | GATE 1 or 2, CAT 3 |
-| negative_marks | numeric(4,2) | GATE MCQ ⅓ or ⅔, CAT MCQ 1, MSQ/NAT/TITA 0. Pre-filled by the editor |
+| marks | numeric(4,2) | CAT 3 |
+| negative_marks | numeric(4,2) | CAT MCQ 1, TITA 0. Pre-filled by the editor |
 | is_pyq | bool | |
 | is_free_practice | bool | **admin-only**: practisable without a purchase |
 | pyq_year | smallint null | required when is_pyq |
-| pyq_paper | text null | e.g. "GATE CS 2024 Set 1", "CAT 2023 Slot 2" |
+| pyq_paper | text null | e.g. "CAT 2023 Slot 2" |
 | status | content_status | only `published` questions go into practice and tests |
 | created_by, reviewed_by | uuid → profiles | |
 
@@ -317,7 +317,7 @@ after submitting a test.
 | title | text | |
 | kind | test_kind | |
 | instructions | text | Markdown, shown before starting |
-| duration_minutes | int | overall time (GATE 180, CAT 120) |
+| duration_minutes | int | overall time (CAT 120) |
 | is_free | bool | **admin-only**: any signed-in user can take it without buying |
 | max_attempts | int null | set by admin per test. null = unlimited |
 | available_from, available_until | timestamptz null | for scheduled "live" mocks |
@@ -328,7 +328,7 @@ after submitting a test.
 | Column | Type | Notes |
 |---|---|---|
 | test_id | uuid → tests | |
-| name | text | GATE: "General Aptitude", "Computer Science". CAT: "VARC", "DILR", "QA" |
+| name | text | CAT: "VARC", "DILR", "QA" |
 | position | int | |
 | duration_minutes | int null | **set = section has its own timer and locks once finished (CAT)**. null = shared timer, free navigation (GATE) |
 

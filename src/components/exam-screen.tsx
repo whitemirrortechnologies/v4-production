@@ -7,7 +7,7 @@ import { Rich } from "@/components/rich";
 import { btn } from "@/components/ui";
 import { IconClock, IconLock, IconSpinner, IconX } from "@/components/icons";
 import { toast } from "@/lib/toast";
-import { clock } from "@/lib/format";
+import { Countdown } from "@/components/countdown";
 import { finishSection, saveResponse, submitTest } from "@/app/app/tests/actions";
 import type { QuestionType } from "@/lib/types";
 
@@ -60,13 +60,9 @@ export function ExamScreen({ paper }: { paper: Paper }) {
   const shownAt = useRef(Date.now());
   const done = useRef(false);
 
-  const skew = useMemo(() => new Date(paper.server_now).getTime() - Date.now(), [paper.server_now]);
-  const deadline = new Date(paper.deadline_at).getTime();
-  const secDeadline = paper.section_deadline_at ? new Date(paper.section_deadline_at).getTime() : null;
-  const [now, setNow] = useState(Date.now() + skew);
-  useEffect(() => { const t = setInterval(() => setNow(Date.now() + skew), 1000); return () => clearInterval(t); }, [skew]);
-  const left = Math.max(0, (deadline - now) / 1000);
-  const secLeft = secDeadline ? Math.max(0, (secDeadline - now) / 1000) : null;
+  const secDeadline = paper.section_deadline_at;
+  const doSubmitRef = useRef<() => void>(() => {});
+  const reloading = useRef(false);
 
   const inSection = useMemo(() => qs.map((q, k) => ({ q, k })).filter((x) => x.q.section_id === sectionId), [qs, sectionId]);
   const q = qs[i];
@@ -77,10 +73,17 @@ export function ExamScreen({ paper }: { paper: Paper }) {
     const qq = qs[k];
     const seconds = (Date.now() - shownAt.current) / 1000;
     shownAt.current = Date.now();
-    const out = await saveResponse(paper.attempt_id, qq.test_question_id, {
+    const body = {
       state: next.state, options: next.sel, num: qq.type === "nat" && next.num !== "" ? Number(next.num) : null,
       text: qq.type === "tita" ? next.text : null, seconds,
-    });
+    };
+    // Retry on network failure (2 s, 4 s) so a brief drop never loses an answer.
+    let out: Awaited<ReturnType<typeof saveResponse>> | null = null;
+    for (let attempt = 0; attempt < 3 && !out; attempt++) {
+      try { out = await saveResponse(paper.attempt_id, qq.test_question_id, body); }
+      catch { if (attempt < 2) await new Promise((res) => setTimeout(res, 2000 * (attempt + 1))); }
+    }
+    if (!out) { toast("Connection problem: your last answer isn't saved yet. It will retry when you move on.", "error"); return; }
     if ("error" in out && out.error) {
       if (/submitted|locked/i.test(out.error)) { done.current = true; router.refresh(); return; }
       toast(`Not saved: ${out.error}`, "error");
@@ -122,15 +125,14 @@ export function ExamScreen({ paper }: { paper: Paper }) {
     });
   }, [q, r, i, persist, paper.attempt_id, router]);
 
-  // Timers: overall → submit; section → reload paper (server moves to the next section).
-  useEffect(() => { if (left <= 0 && !done.current) { toast("Time's up. Submitting your test…", "info"); doSubmit(); } }, [left, doSubmit]);
-  const reloading = useRef(false);
-  useEffect(() => {
-    if (secLeft !== null && secLeft <= 0 && !reloading.current && left > 0) {
-      reloading.current = true;
-      void (async () => { if (q && r) await persist(i, r); toast("Section time is over. Moving on…", "info"); router.refresh(); })();
-    }
-  }, [secLeft]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Expiry handlers are called by the <Countdown> children (so the screen itself never re-renders each second).
+  const expireTotal = useCallback(() => { if (!done.current) { toast("Time's up. Submitting your test…", "info"); doSubmitRef.current(); } }, []);
+  const expireSection = useCallback(() => {
+    if (reloading.current || done.current) return;
+    reloading.current = true;
+    void (async () => { if (q && r) await persist(i, r); toast("Section time is over. Moving on…", "info"); router.refresh(); })();
+  }, [q, r, i, persist, router]);
+  useEffect(() => { doSubmitRef.current = doSubmit; }, [doSubmit]);
 
   // Don't lose the test by accident.
   useEffect(() => {
@@ -180,8 +182,13 @@ export function ExamScreen({ paper }: { paper: Paper }) {
       {/* Top bar */}
       <header className="flex h-14 shrink-0 items-center gap-3 bg-night px-3 text-white sm:px-5 [@media(max-height:500px)]:h-10">
         <p className="min-w-0 flex-1 truncate text-sm font-semibold">{paper.test.title}</p>
-        {secLeft !== null && <span className={clsx("hidden items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm tabular-nums sm:flex", secLeft < 300 ? "bg-bad" : "bg-white/10")}>{secName} {clock(secLeft)}</span>}
-        <span className={clsx("flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-display text-base font-bold tabular-nums", left < 300 ? "bg-bad" : "bg-white/10")} role="timer" aria-live="off"><IconClock size={15} />{clock(secLeft ?? left)}</span>
+        {secDeadline && <span className="hidden items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1 text-sm tabular-nums sm:flex">{secName}{" "}<Countdown deadline={secDeadline} serverNow={paper.server_now} onExpire={expireSection} className="text-white" warnClassName="font-bold text-[#ff8a8a]" /></span>}
+        <span className="flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-display text-base font-bold tabular-nums"><IconClock size={15} />
+          {secDeadline
+            ? <Countdown deadline={secDeadline} serverNow={paper.server_now} className="text-white" warnClassName="text-[#ff8a8a]" />
+            : <Countdown deadline={paper.deadline_at} serverNow={paper.server_now} onExpire={expireTotal} className="text-white" warnClassName="text-[#ff8a8a]" />}
+        </span>
+        {secDeadline && <Countdown deadline={paper.deadline_at} serverNow={paper.server_now} onExpire={expireTotal} className="hidden" />}
         <button onClick={() => setPaletteOpen(true)} className="rounded-lg bg-white/10 px-3 py-1.5 text-sm font-semibold lg:hidden">Questions</button>
       </header>
       {/* Section tabs */}

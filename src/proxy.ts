@@ -7,6 +7,19 @@ export async function proxy(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return NextResponse.next();
 
+  // Visitors have no session cookie: nothing to refresh, and /app and /admin just redirect.
+  const hasSession = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+  const path = request.nextUrl.pathname;
+  if (!hasSession) {
+    if (path.startsWith("/app") || path.startsWith("/admin")) {
+      const login = request.nextUrl.clone();
+      login.pathname = "/login";
+      login.search = `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
+      return NextResponse.redirect(login);
+    }
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(url, key, {
     cookies: {
@@ -20,7 +33,6 @@ export async function proxy(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getClaims();
-  const path = request.nextUrl.pathname;
   if (!data?.claims && (path.startsWith("/app") || path.startsWith("/admin"))) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";

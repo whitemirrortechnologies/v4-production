@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Rich } from "@/components/rich";
 import { btn, Input } from "@/components/ui";
 import { IconAlert, IconCheck, IconClock, IconSpinner, IconX } from "@/components/icons";
 import { toast } from "@/lib/toast";
-import { clock } from "@/lib/format";
+import { Countdown } from "@/components/countdown";
 import { TYPE_LABEL } from "@/lib/marking";
 import { answerPractice, endPractice, reportQuestion, toggleBookmark } from "@/app/app/practice/actions";
 import type { QuestionType } from "@/lib/types";
@@ -31,19 +31,9 @@ export function PracticeSession({ data }: { data: PSession }) {
   const [reporting, setReporting] = useState(false);
   const shownAt = useRef(Date.now());
 
-  // Server-anchored countdown.
-  const skew = useMemo(() => new Date(data.server_now).getTime() - Date.now(), [data.server_now]);
-  const deadline = data.is_timed && data.time_limit_seconds ? new Date(data.started_at).getTime() + data.time_limit_seconds * 1000 : null;
-  const [left, setLeft] = useState<number | null>(deadline ? Math.max(0, (deadline - (Date.now() + skew)) / 1000) : null);
-  useEffect(() => {
-    if (!deadline || ended) return;
-    const id = setInterval(() => {
-      const l = Math.max(0, (deadline - (Date.now() + skew)) / 1000);
-      setLeft(l);
-      if (l <= 0) { clearInterval(id); setEnded(true); void endPractice(data.session_id); toast("Time's up!", "info"); }
-    }, 1000);
-    return () => clearInterval(id);
-  }, [deadline, skew, ended, data.session_id]);
+  // Countdown is its own component so the (formula-heavy) question never re-renders each second.
+  const deadlineIso = data.is_timed && data.time_limit_seconds ? new Date(new Date(data.started_at).getTime() + data.time_limit_seconds * 1000).toISOString() : null;
+  const onTimeUp = useCallback(() => { setEnded(true); void endPractice(data.session_id); toast("Time's up!", "info"); }, [data.session_id]);
 
   const q = qs[i];
   useEffect(() => { setSel([]); setVal(""); shownAt.current = Date.now(); }, [i]);
@@ -173,9 +163,11 @@ export function PracticeSession({ data }: { data: PSession }) {
       </article>
 
       <aside className="h-fit space-y-4 lg:sticky lg:top-24">
-        {left !== null && (
-          <div className={clsx("flex items-center gap-3 rounded-2xl p-4", left < 60 ? "bg-bad/10 text-bad" : "bg-night text-white")}>
-            <IconClock size={18} /><span className="font-display text-2xl font-bold tabular-nums">{clock(left)}</span><span className="text-xs opacity-70">left</span>
+        {deadlineIso && !ended && (
+          <div className="flex items-center gap-3 rounded-2xl bg-night p-4 text-white">
+            <IconClock size={18} />
+            <Countdown deadline={deadlineIso} serverNow={data.server_now} onExpire={onTimeUp} warnBelow={60} className="font-display text-2xl font-bold tabular-nums" warnClassName="font-display text-2xl font-bold tabular-nums text-[#ff8a8a]" />
+            <span className="text-xs opacity-70">left</span>
           </div>
         )}
         <div className="rounded-2xl border border-line bg-paper p-4">

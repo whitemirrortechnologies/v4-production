@@ -14,7 +14,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
   await requireStaff("/admin/questions/groups");
   const sp = await searchParams;
   const supabase = await createClient();
-  const { data: examRows } = await supabase.from("exams").select("*").order("position");
+  const { data: examRows } = await supabase.from("exams").select("*").eq("is_active", true).order("position");
   const exams = (examRows ?? []) as Exam[];
   const exam = exams.find((e) => e.code === sp.exam) ?? exams[0];
   const { data } = exam ? await supabase.from("question_groups").select("*").eq("exam_id", exam.id).order("created_at", { ascending: false }) : { data: [] };

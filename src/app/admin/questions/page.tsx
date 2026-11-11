@@ -17,7 +17,7 @@ export default async function QuestionsPage({ searchParams }: { searchParams: Pr
   await requireStaff("/admin/questions");
   const sp = await searchParams;
   const supabase = await createClient();
-  const { data: examRows } = await supabase.from("exams").select("*").order("position");
+  const { data: examRows } = await supabase.from("exams").select("*").eq("is_active", true).order("position");
   const exams = (examRows ?? []) as Exam[];
   const exam = exams.find((e) => e.code === sp.exam) ?? exams[0];
   const page = Math.max(1, Number(sp.page) || 1);

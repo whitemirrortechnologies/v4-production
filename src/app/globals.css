@@ -165,3 +165,11 @@ details > summary::-webkit-details-marker { display: none; }
 /* Bigger touch area without changing the look (for small text links). */
 .tap { position: relative; }
 .tap::after { content: ""; position: absolute; inset: -12px -8px; }
+
+/* Cross-fade between pages (browsers without View Transitions simply skip it). */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) { animation: 160ms var(--ease-apple) both fade-out; }
+  ::view-transition-new(root) { animation: 260ms var(--ease-apple) 60ms both fade-in; }
+}
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes fade-in { from { opacity: 0; } }

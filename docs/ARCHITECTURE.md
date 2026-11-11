@@ -1,11 +1,11 @@
-# V4 — Architecture (DRAFT for review)
+# V4 — Architecture (CAT-only; original plan also covered GATE, now removed)
 
 > Status: proposal, round 3. Decided: start fresh · Next.js + Supabase (Free plan, **separate
 > Supabase account** from the one connected here) · **Cloudflare R2 for video files** · tests sold
 > both inside courses and as test series · **login UI built last**.
 > R2 setup guide: [docs/setup/cloudflare-r2.md](setup/cloudflare-r2.md).
 
-V4 is an exam-prep platform for **GATE (CS/IT)** and **CAT**: students learn (video courses),
+V4 is an exam-prep platform for **CAT**: students learn (video courses),
 practice (topic-wise questions) and test (full-length mocks). Admins and faculty manage all content
 and can see how it's being used.
 
@@ -16,7 +16,7 @@ and can see how it's being used.
 | Layer | Choice | Why |
 |---|---|---|
 | Web app | **Next.js 15 (App Router) + TypeScript** | One codebase for the public site, the student app and the admin panel. Server components keep secrets and answer keys on the server. |
-| UI | **Tailwind CSS + shadcn/ui**, **KaTeX** for math | Fast, consistent UI. GATE/CAT questions need formulas. |
+| UI | **Tailwind CSS + shadcn/ui**, **KaTeX** for math | Fast, consistent UI. CAT quant questions need formulas. |
 | Database / Auth / Files | **Supabase** (Postgres 17, Auth, Storage, Row-Level Security), region **ap-south-1 (Mumbai)** | You already use Supabase. Low latency for Indian students. RLS enforces access control inside the DB itself. |
 | Video | **Cloudflare R2** via a `VideoStorage` adapter (Bunny Stream etc. can be added later) | Supabase Free can't hold real course video (see §1.1). The adapter lets us swap where files live without touching the rest of the app. |
 | Payments | `PaymentProvider` interface: **DemoProvider** now, **Razorpay** later | Turning on real payments later only means writing one new class, not touching business logic. |
@@ -116,8 +116,8 @@ so both RLS policies and Next.js middleware can check it cheaply.
 ### 3.1 Content hierarchy (fixed depth, as you described)
 
 ```
-exam (GATE | CAT)
- └─ course            e.g. "Algorithms for GATE CS"   (price, status, thumbnail)
+exam (CAT; more can be added later)
+ └─ course            e.g. "Quant: Arithmetic Core"   (price, status, thumbnail)
      └─ subject       e.g. "Algorithms"
          └─ module    e.g. "Graph Algorithms"
              └─ chapter   e.g. "Shortest Paths"
@@ -128,7 +128,7 @@ Each level gets its own table with `position` ordering. Fixed depth is simpler a
 generic tree, and it matches what admins see.
 
 **Topics (for questions) are separate from the course tree.** Questions are tagged against a
-**syllabus taxonomy** (`exam → section → topic → subtopic`, following the official GATE CS/IT
+**syllabus taxonomy** (`exam → section → topic → subtopic`, following the official CAT
 and CAT syllabus). That way one question can appear in practice, in several mocks and next to
 several courses' chapters without being copied. Chapters can link to topics, which powers
 "practice this chapter".
@@ -137,13 +137,13 @@ several courses' chapters without being copied. Chapters can link to topics, whi
 
 | Type | Exam | Answer | Marking |
 |---|---|---|---|
-| `MCQ` single correct | GATE, CAT | one option | GATE: −⅓ (1-mark) / −⅔ (2-mark); CAT: +3 / −1 |
-| `MSQ` multiple correct | GATE | set of options; credit only for an exact match | no negative marks |
-| `NAT` numerical | GATE | number within a `[min, max]` range | no negative marks |
+| `MCQ` single correct | CAT | one option | +3 / −1 |
+| `TITA` type-in-the-answer | CAT | exact number or text | +3, no negative marks |
+| `MSQ` / `NAT` | other exams (not used by CAT) | exact option set / numeric range | configurable |
 | `TITA` type-in-the-answer | CAT | exact number/string | no negative marks |
 
 Fields: stem (Markdown + KaTeX + images), options, difficulty (`easy|medium|hard`), marks,
-topic(s), explanation/solution, **`is_pyq` + `pyq_year` + `pyq_paper`** (e.g. GATE CS 2024 Set 1),
+topic(s), explanation/solution, **`is_pyq` + `pyq_year` + `pyq_paper`** (e.g. CAT 2023 Slot 2),
 status (`draft|review|published`), author.
 
 **Answer keys live in a separate table (`question_keys`) that students can't read through RLS.**
@@ -157,7 +157,7 @@ point to it.
 - `test`: exam, type (`full_mock | sectional | topic_test | pyq_paper`), duration, instructions,
   marking scheme, linked course(s) or standalone, free/paid.
 - `test_section`: e.g. CAT VARC / DILR / QA, each with its **own timer and locked navigation**;
-  GATE General Aptitude + CS, one shared timer.
+  Sectional / topic tests: one shared timer.
 - `test_question`: ordered list of questions per section, with optional per-test marks override.
 
 ### 3.4 Commerce
@@ -206,7 +206,7 @@ server checks it and returns the correct answer plus the explanation. Wrong answ
 - Starting creates a `test_attempt` with `deadline = now + duration`. **The server clock decides**,
   so refreshing or changing the device clock doesn't buy extra time.
 - The UI follows the real exam layout: question palette (not visited / not answered / answered /
-  marked for review), on-screen virtual calculator for GATE, section lock for CAT.
+  marked for review), section lock for CAT (on-screen calculator planned).
 - Each answer autosaves (debounced) to `test_response`. Refreshing resumes the attempt.
 - Submitting, or hitting the deadline (enforced on the server even if the tab closes, via a
   scheduled sweep with `pg_cron`), → the scoring function runs in Postgres → results.
@@ -223,8 +223,8 @@ Razorpay later: same flow, real checkout plus signature-verified webhook.
 ## 5. App structure (routes)
 
 ```
-/                         landing: choose GATE or CAT
-/gate, /cat               exam hub: courses, mocks, PYQs
+/                         landing page
+/exams/cat               exam hub: courses, mocks, PYQs
 /courses/[slug]           course detail (curriculum, real counts, price, preview lectures)
 /checkout/[courseId]
 /login, /signup           Supabase Auth (email OTP / Google) [DECIDE]
@@ -256,7 +256,7 @@ src/features/<domain>/               courses, video, questions, tests, practice,
     └─ components/
 src/lib/supabase/  src/lib/payments/  src/lib/video/   provider adapters
 supabase/migrations/                  SQL schema + RLS policies + functions (version-controlled)
-supabase/seed.sql                     GATE/CAT syllabus taxonomy + demo data
+supabase/seed.sql                     CAT syllabus taxonomy
 ```
 
 ---
@@ -291,7 +291,7 @@ Implemented as SQL views / materialized views refreshed by `pg_cron`.
 | M2 | Video upload + player + resume | Admin uploads, student watches and resumes |
 | M3 | Demo checkout + enrollment gating | Buy → access unlocks |
 | M4 | Question bank + practice | Admin authors MCQ/MSQ/NAT/TITA + PYQs. Students practice |
-| M5 | Test builder + exam engine + results/analysis | Full GATE and CAT mocks |
+| M5 | Test builder + exam engine + results/analysis | Full CAT mocks |
 | M6 | Student dashboard + admin analytics | Progress and usage views |
 | M7 | **Real login** (methods TBD), Razorpay, Playwright E2E, perf, a11y | Production-ready |
 

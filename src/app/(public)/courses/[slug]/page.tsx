@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { Badge, Card, Eyebrow, LinkButton } from "@/components/ui";
 import { IconChevron, IconLock, IconPlay, IconCheck } from "@/components/icons";
-import { getCourseBySlug, getCurriculum, priceOf } from "@/lib/catalog";
+import { getCourseBySlug, getCurriculum, getMine, priceOf } from "@/lib/catalog";
 import { getViewer } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import { clock, duration, rupees } from "@/lib/format";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -17,12 +16,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   if (!course) notFound();
   const [tree, viewer] = await Promise.all([getCurriculum(course.id), getViewer()]);
 
-  let enrolled = false;
-  if (viewer) {
-    const supabase = await createClient();
-    const { data } = await supabase.rpc("has_course_access", { p_course: course.id });
-    enrolled = data === true && viewer.profile.role === "student";
-  }
+  const enrolled = viewer ? (await getMine(viewer.user.id)).courseIds.has(course.id) : false;
   const price = priceOf(course.product);
   const sale = course.product?.sale_price_paise != null && course.product.sale_price_paise < course.product.price_paise;
   const published = (l: { status: string }) => l.status === "published";

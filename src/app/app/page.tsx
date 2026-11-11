@@ -7,7 +7,7 @@ import { CourseArt } from "@/components/course-art";
 import { CourseCard } from "@/components/course-card";
 import { Arrow, btn, Eyebrow } from "@/components/ui";
 import { IconPlay } from "@/components/icons";
-import { getCourses, getExams } from "@/lib/catalog";
+import { getCourses, getCurriculum, getExams, getMine } from "@/lib/catalog";
 import { ActionForm, Submit } from "@/components/forms";
 import { setTargetExam } from "./onboarding-actions";
 import { duration } from "@/lib/format";
@@ -19,36 +19,31 @@ type C = { id: string; title: string; slug: string; subtitle: string | null; exa
 export default async function Dashboard() {
   const { user, profile } = await requireViewer("/app");
   const supabase = await createClient();
-  const one = <T,>(v: T | T[] | null | undefined) => (Array.isArray(v) ? v[0] : v) ?? null;
 
-  const [{ data: enr }, { data: watched }, all] = await Promise.all([
-    supabase.from("enrollments").select("expires_at, product:products(type, course:courses(id,title,slug,subtitle,exam_id))").eq("user_id", user.id).eq("is_active", true),
+  const [mine, { data: watched }, all, exams] = await Promise.all([
+    getMine(user.id),
     supabase.from("lecture_progress").select("watched_seconds, completed_at").eq("user_id", user.id),
     getCourses(),
+    getExams(),
   ]);
-  const exams = await getExams();
   const target = exams.find((e) => e.id === profile.target_exam_id) ?? null;
-  const mine = (enr ?? [])
-    .filter((e) => !e.expires_at || new Date(e.expires_at) > new Date())
-    .map((e) => ({ course: one(one(e.product as { course: C | C[] | null } | { course: C | C[] | null }[] | null)?.course), expires: e.expires_at }))
-    .filter((x): x is { course: C; expires: string | null } => !!x.course);
-
-  const ids = mine.map((m) => m.course.id);
-  const [{ data: progress }, { data: stats }] = await Promise.all([
-    ids.length ? supabase.from("course_progress").select("*").eq("user_id", user.id).in("course_id", ids) : Promise.resolve({ data: [] as never[] }),
-    ids.length ? supabase.from("course_stats").select("*").in("course_id", ids) : Promise.resolve({ data: [] as never[] }),
-  ]);
-  const latest = [...(progress ?? [])].sort((a, b) => String(b.last_activity_at).localeCompare(String(a.last_activity_at)))[0];
-  const latestCourse = latest && mine.find((m) => m.course.id === latest.course_id)?.course;
-  const { data: latestLecture } = latest?.last_lecture_id
-    ? await supabase.from("lectures").select("id,title").eq("id", latest.last_lecture_id).maybeSingle()
-    : { data: null };
+  const owned = all.filter((c) => mine.courseIds.has(c.id));
+  const ids = owned.map((c) => c.id);
+  const progressOf = (id: string) => mine.progress.get(id);
+  const latestId = [...mine.progress.entries()].filter(([, p]) => p.last).at(-1)?.[0] ?? owned[0]?.id;
+  const latestCourse = owned.find((c) => c.id === latestId) ?? null;
+  const latest = latestCourse ? progressOf(latestCourse.id) : undefined;
+  // Lecture titles come from the cached curriculum, so no extra database call.
+  const latestLecture = latestCourse && latest?.last
+    ? (await getCurriculum(latestCourse.id)).flatMap((s) => s.modules.flatMap((m) => m.chapters.flatMap((c) => c.lectures))).find((l) => l.id === latest.last) ?? null
+    : null;
 
   const secs = (watched ?? []).reduce((n, w) => n + (w.watched_seconds ?? 0), 0);
   const completed = (watched ?? []).filter((w) => w.completed_at).length;
-  const examCode = (examId: string) => all.find((c) => c.exam_id === examId)?.exam.code.split("_")[0] ?? "V4";
+  const examCode = (examId: string) => exams.find((e) => e.id === examId)?.code.split("_")[0] ?? "V4";
   const others = all.filter((c) => !ids.includes(c.id) && (!target || c.exam_id === target.id)).slice(0, 3);
   const first = profile.full_name?.split(" ")[0];
+  const mineList = owned.map((course) => ({ course, expires: null as string | null }));
 
   return (
     <>
@@ -61,7 +56,7 @@ export default async function Dashboard() {
               <Eyebrow dark>Dashboard</Eyebrow>
               <h1 className="h1 mt-4">{first ? `Hello, ${first}.` : "Welcome back."}</h1>
               <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-                {[["Courses", mine.length], ["Lectures completed", completed], ["Time learning", secs ? duration(secs) : "0m"]].map(([k, v]) => (
+                {[["Courses", owned.length], ["Lectures completed", completed], ["Time learning", secs ? duration(secs) : "0m"]].map(([k, v]) => (
                   <div key={k as string}><dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-night-ink-2">{k}</dt><dd className="mt-1 font-display text-3xl font-bold">{v}</dd></div>
                 ))}
               </dl>
@@ -75,8 +70,8 @@ export default async function Dashboard() {
                 <div className="mt-5 flex items-center gap-4">
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform duration-500 ease-spring group-hover:scale-110"><IconPlay size={16} /></span>
                   <div className="min-w-0 flex-1">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-wash"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Number(latest.total_lectures) ? (Number(latest.completed_lectures) / Number(latest.total_lectures)) * 100 : 0}%` }} /></div>
-                    <p className="mt-1.5 text-xs text-ink-3">{latest.completed_lectures} of {latest.total_lectures} lectures</p>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-wash"><div className="h-full rounded-full bg-violet-500" style={{ width: `${latest?.total ? (latest.done / latest.total) * 100 : 0}%` }} /></div>
+                    <p className="mt-1.5 text-xs text-ink-3">{latest?.done ?? 0} of {latest?.total ?? 0} lectures</p>
                   </div>
                 </div>
               </Link>
@@ -105,15 +100,15 @@ export default async function Dashboard() {
             <h2 className="h2">My courses</h2>
             <Link href="/courses" className="tap text-sm font-semibold text-violet-600 hover:underline">Browse all</Link>
           </div>
-          {mine.length ? (
+          {owned.length ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {mine.map(({ course, expires }, i) => {
-                const p = progress?.find((x) => x.course_id === course.id);
-                const s = stats?.find((x) => x.course_id === course.id);
-                const total = Number(p?.total_lectures ?? s?.lecture_count ?? 0), doneN = Number(p?.completed_lectures ?? 0);
+              {mineList.map(({ course, expires }, i) => {
+                const p = progressOf(course.id);
+                const s = course.stats;
+                const total = Number(p?.total ?? s?.lecture_count ?? 0), doneN = Number(p?.done ?? 0);
                 const pct = total ? Math.round((doneN / total) * 100) : 0;
                 return (
-                  <div key={course.id} data-reveal style={delay((i % 3) * 70)}><Link href={`/app/learn/${course.slug}${p?.last_lecture_id ? `/${p.last_lecture_id}` : ""}`}
+                  <div key={course.id} data-reveal style={delay((i % 3) * 70)}><Link href={`/app/learn/${course.slug}${p?.last ? `/${p.last}` : ""}`}
                     className="lift group block h-full overflow-hidden rounded-2xl border border-line bg-paper">
                     <CourseArt title={course.title} slug={course.slug} tag={examCode(course.exam_id)} className="aspect-[16/7]" />
                     <div className="p-5">

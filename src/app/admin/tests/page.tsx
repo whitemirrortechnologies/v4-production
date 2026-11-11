@@ -13,7 +13,7 @@ export default async function TestsAdmin() {
   const supabase = await createClient();
   const [{ data: tests }, { data: exams }] = await Promise.all([
     supabase.from("tests").select("id,title,kind,status,duration_minutes,is_free,exam:exams(name),test_questions(count)").order("created_at", { ascending: false }),
-    supabase.from("exams").select("id,name").order("position"),
+    supabase.from("exams").select("id,name").eq("is_active", true).order("position"),
   ]);
   return (
     <>

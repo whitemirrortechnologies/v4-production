@@ -59,7 +59,8 @@ export function HeroField({ className }: { className?: string }) {
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { canvas.dataset.fallback = "1"; return; }
     gl.useProgram(prog);
 
-    const small = matchMedia("(max-width: 768px)").matches;
+    const weak = (navigator.hardwareConcurrency ?? 8) <= 4 || ((navigator as { deviceMemory?: number }).deviceMemory ?? 8) <= 4;
+    const small = matchMedia("(max-width: 768px)").matches || weak;
     const cols = small ? 110 : 220, rows = small ? 60 : 96;
     const pts = new Float32Array(cols * rows * 2);
     let k = 0;

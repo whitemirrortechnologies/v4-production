@@ -5,6 +5,14 @@ for me to build**. Work top to bottom.
 
 ---
 
+## 0. Do these two first (speed + removing GATE)
+
+- [ ] **Faster sign-in checks.** Supabase → Project Settings → **JWT Keys** (or "JWT Signing Keys"): if it still
+      says "Legacy JWT secret", click **Migrate** to the new asymmetric signing keys. Then the app verifies sessions
+      without a network call on every page. New projects already have this.
+- [ ] **Remove GATE from the database.** Supabase → SQL Editor → run `supabase/manual/delete-gate.sql` (permanent) or
+      `supabase/manual/remove-gate.sql` (just hides it). Until you do, GATE rows are still in your database.
+
 ## A. Your to-do: right now, to test everything that's built
 
 - [ ] **1. Check the Supabase region.** Supabase → Project Settings → General → Region.
@@ -86,7 +94,7 @@ for me to build**. Work top to bottom.
 | Doubts under lectures (ask + faculty reply) | DB ready, UI not built |
 | Question reports queue (admin) | students can already report; admin review screen not built |
 | Bookmarked / "revise later" list for students | bookmarks are saved; no list page yet |
-| GATE virtual calculator in the exam screen | |
+| On-screen calculator in the exam screen | |
 | Bulk question import (CSV) | |
 | Deeper analytics (per course, per question quality) | the `question_stats` view exists |
 | Google sign-in | optional; needs a Google Cloud OAuth client |

@@ -5,6 +5,8 @@ import "./globals.css";
 import { env } from "@/lib/env";
 import { Toaster } from "@/components/toaster";
 import { Motion } from "@/components/motion";
+import { NavProgress } from "@/components/nav-progress";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Toaster />
         <Motion />
+        <Suspense fallback={null}><NavProgress /></Suspense>
       </body>
     </html>
   );

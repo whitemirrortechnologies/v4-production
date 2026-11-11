@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireViewer } from "@/lib/auth";
-import { getCourseBySlug, getCurriculum } from "@/lib/catalog";
+import { getCourseBySlug, getCurriculum, getMine } from "@/lib/catalog";
 import { Player } from "@/components/player";
 import { Badge, LinkButton } from "@/components/ui";
 import { IconBook, IconCheck, IconLock, IconPlay } from "@/components/icons";
@@ -13,17 +13,18 @@ export const metadata = { title: "Learn" };
 
 export default async function LearnPage({ params }: { params: Promise<{ slug: string; lectureId?: string[] }> }) {
   const { slug, lectureId } = await params;
-  const { user } = await requireViewer(`/app/learn/${slug}`);
+  const viewer = await requireViewer(`/app/learn/${slug}`);
+  const user = viewer.user;
   const course = await getCourseBySlug(slug);
   if (!course) notFound();
 
   const supabase = await createClient();
-  const [tree, { data: hasAccess }, { data: prog }] = await Promise.all([
+  const [tree, mine, { data: prog }] = await Promise.all([
     getCurriculum(course.id),
-    supabase.rpc("has_course_access", { p_course: course.id }),
+    getMine(user.id),
     supabase.from("lecture_progress").select("lecture_id,last_position_seconds,completed_at,updated_at").eq("user_id", user.id),
   ]);
-  const enrolled = hasAccess === true;
+  const enrolled = mine.courseIds.has(course.id) || viewer.profile.role !== "student";
   const done = new Set((prog ?? []).filter((p) => p.completed_at).map((p) => p.lecture_id));
 
   const flat = tree.flatMap((s) => s.modules.flatMap((m) => m.chapters.flatMap((c) => c.lectures.filter((l) => l.status === "published").map((l) => ({ ...l, chapter: c.title, module: m.title })))));

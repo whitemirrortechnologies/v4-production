@@ -12,7 +12,7 @@ export default async function SeriesAdmin() {
   const supabase = await createClient();
   const [{ data: series }, { data: exams }] = await Promise.all([
     supabase.from("test_series").select("id,title,status,exam:exams(name),test_series_tests(count),products(price_paise,sale_price_paise)").order("created_at", { ascending: false }),
-    supabase.from("exams").select("id,name").order("position"),
+    supabase.from("exams").select("id,name").eq("is_active", true).order("position"),
   ]);
   return (
     <>

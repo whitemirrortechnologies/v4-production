@@ -9,7 +9,7 @@
    [`migrations/20261111000000_init.sql`](migrations/20261111000000_init.sql) → **Run**.
    This creates all tables, security rules, functions, views and storage buckets. It's meant to run
    **once** on an empty project.
-4. **New query** → paste [`seed.sql`](seed.sql) → **Run**. This adds GATE CS/IT and CAT and their
+4. **New query** → paste [`seed.sql`](seed.sql) → **Run**. This adds the CAT exam and its
    full syllabus topics. It's safe to run again.
 5. Create your admin account:
    **Authentication → Users → Add user** (email + password, tick "Auto confirm"), then in SQL Editor:
@@ -23,7 +23,7 @@
                   where s.exam_id = e.id) as topics
      from public.exams e;
    ```
-   Expected: `GATE_CS` and `CAT`, each with a topic count.
+   Expected: `CAT` with a topic count.
 
 > The Security Advisor will flag `public.profile_cards` as a "security definer view". That's
 > intended: it shows only name, avatar and role, so students can see who answered a doubt, and it

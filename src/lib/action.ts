@@ -1,5 +1,5 @@
 import "server-only";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 /** Turn a Postgres/PostgREST error into something a person can read. */
 export function dbMessage(e: { code?: string; message: string }): string {
@@ -9,5 +9,9 @@ export function dbMessage(e: { code?: string; message: string }): string {
   return e.message;
 }
 
-export const refresh = (...paths: string[]) => paths.forEach((p) => revalidatePath(p));
+/** Re-render these pages and purge the cached public catalog so students see admin edits right away. */
+export const refresh = (...paths: string[]) => {
+  paths.forEach((p) => revalidatePath(p));
+  revalidateTag("catalog", { expire: 0 });
+};
 export const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();

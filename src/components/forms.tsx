@@ -25,7 +25,16 @@ export function ActionForm({
   const [asking, setAsking] = useState(false);
 
   async function run(fd: FormData) {
-    const r = await action(fd);
+    let r: Result;
+    try {
+      r = await action(fd);
+    } catch (e) {
+      // Redirects are thrown by design; anything else is a real failure (offline, timeout, server error).
+      const msg = String((e as { digest?: string; message?: string })?.digest ?? (e as Error)?.message ?? "");
+      if (msg.includes("NEXT_REDIRECT")) throw e;
+      toast(navigator.onLine ? "That took too long or failed. Please try again." : "You're offline. Check your connection and try again.", "error");
+      return;
+    }
     if (r?.error) toast(r.error, "error");
     else {
       const msg = r?.ok ?? success;
@@ -98,9 +107,13 @@ export function InlineEdit({ action, name, value, fields, className, label }: {
     fd.set(name, v);
     setState("saving");
     start(async () => {
-      const r = await action(fd);
-      if (r?.error) { toast(r.error, "error"); el.value = last.current; setState("idle"); return; }
-      last.current = v; setState("saved"); setTimeout(() => setState("idle"), 1500);
+      try {
+        const r = await action(fd);
+        if (r?.error) { toast(r.error, "error"); el.value = last.current; setState("idle"); return; }
+        last.current = v; setState("saved"); setTimeout(() => setState("idle"), 1500);
+      } catch {
+        toast("Couldn't save. Check your connection.", "error"); el.value = last.current; setState("idle");
+      }
     });
   }
   return (

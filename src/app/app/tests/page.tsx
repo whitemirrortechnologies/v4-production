@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Badge, Empty, Eyebrow } from "@/components/ui";
 import { IconClock, IconLock, IconChevron } from "@/components/icons";
-import { getExams } from "@/lib/catalog";
+import { getExams, getMine, getTestAccess } from "@/lib/catalog";
 
 export const metadata = { title: "Tests" };
 const KIND: Record<string, string> = { full_mock: "Full mock", sectional: "Sectional", topic_test: "Topic test", pyq_paper: "Past paper" };
@@ -17,11 +17,12 @@ export default async function TestsHome({ searchParams }: { searchParams: Promis
   const exams = await getExams();
   const exam = exams.find((e) => e.code.toLowerCase() === sp.exam?.toLowerCase()) ?? exams.find((e) => e.id === profile.target_exam_id) ?? exams[0];
   const supabase = await createClient();
-  const [{ data: tests }, { data: attempts }] = await Promise.all([
+  const [{ data: tests }, { data: attempts }, mine] = await Promise.all([
     exam ? supabase.from("tests").select("id,title,kind,duration_minutes,is_free,max_attempts,available_from,available_until,test_sections(name,duration_minutes)").eq("exam_id", exam.id).eq("status", "published").order("created_at") : Promise.resolve({ data: [] }),
     supabase.from("test_attempts").select("id,test_id,status,score,max_score,attempt_no,submitted_at").eq("user_id", user.id).order("started_at", { ascending: false }),
+    getMine(user.id),
   ]);
-  const access = Object.fromEntries(await Promise.all((tests ?? []).map(async (t) => [t.id, (await supabase.rpc("has_test_access", { p_test: t.id })).data === true] as const)));
+  const access = await getTestAccess(mine, (tests ?? []) as { id: string; is_free: boolean }[]);
 
   return (
     <>

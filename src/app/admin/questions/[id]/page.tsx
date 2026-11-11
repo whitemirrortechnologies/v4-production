@@ -17,7 +17,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
   const isNew = id === "new";
 
   const [{ data: exams }, { data: sections }, { data: groups }, q] = await Promise.all([
-    supabase.from("exams").select("*").order("position"),
+    supabase.from("exams").select("*").eq("is_active", true).order("position"),
     supabase.from("syllabus_sections").select("*, topics(*)").order("position"),
     supabase.from("question_groups").select("id,exam_id,title,content").order("created_at", { ascending: false }),
     isNew ? Promise.resolve(null) : Promise.all([
