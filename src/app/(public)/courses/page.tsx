@@ -3,22 +3,26 @@ import { delay } from "@/lib/motion";
 import clsx from "clsx";
 import { CourseCard } from "@/components/course-card";
 import { Button, Empty, Eyebrow, Input, Select } from "@/components/ui";
-import { getCourses, getExams, priceOf } from "@/lib/catalog";
+import { getCourses, getExams, getMine, priceOf } from "@/lib/catalog";
+import { getViewer } from "@/lib/auth";
 
 export const metadata = { title: "Courses" };
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 type SP = { q?: string; exam?: string; price?: string; sort?: string };
 
 export default async function CoursesPage({ searchParams }: { searchParams: Promise<SP> }) {
   const sp = await searchParams;
-  const [all, exams] = await Promise.all([getCourses(), getExams()]);
+  const viewer = await getViewer();
+  const [all, exams, mine] = await Promise.all([getCourses(), getExams(), getMine(viewer?.user.id ?? null)]);
   const term = sp.q?.trim().toLowerCase();
 
   let list = all.filter((c) => (!sp.exam || c.exam.code.toLowerCase() === sp.exam.toLowerCase())
     && (!term || `${c.title} ${c.subtitle ?? ""}`.toLowerCase().includes(term))
     && (sp.price !== "free" || priceOf(c.product) === 0)
     && (sp.price !== "paid" || (priceOf(c.product) ?? 0) > 0));
+  const owned = all.filter((c) => mine.courseIds.has(c.id));
+  list = list.filter((c) => !mine.courseIds.has(c.id));
   if (sp.sort === "price-asc") list = [...list].sort((a, b) => (priceOf(a.product) ?? 0) - (priceOf(b.product) ?? 0));
   if (sp.sort === "price-desc") list = [...list].sort((a, b) => (priceOf(b.product) ?? 0) - (priceOf(a.product) ?? 0));
 
@@ -31,8 +35,18 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
   return (
     <main id="main" className="mx-auto max-w-[90rem] px-4 py-16 sm:px-10">
       <Eyebrow>Courses</Eyebrow>
-      <h1 className="h1 mt-3">Find your next course</h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">Structured courses for GATE and CAT. Search, filter and start with a free preview lecture.</p>
+      <h1 className="h1 mt-3">{viewer ? "Your courses and more" : "Find your next course"}</h1>
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">{viewer ? "Continue what you've started, or add another course to your preparation." : "Structured courses for GATE and CAT. Search, filter and start with a free preview lecture."}</p>
+
+      {owned.length > 0 && (
+        <section className="mt-12">
+          <h2 className="h2">Continue learning</h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {owned.map((c, i) => <div key={c.id} data-reveal style={delay((i % 3) * 70)}><CourseCard course={c} enrolled progress={mine.progress.get(c.id)} /></div>)}
+          </div>
+          <h2 className="h2 mt-16">Explore more</h2>
+        </section>
+      )}
 
       <form className="mt-10 flex flex-wrap items-end gap-3" action="/courses">
         {sp.exam && <input type="hidden" name="exam" value={sp.exam} />}
@@ -55,7 +69,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
       <div className="mt-8">
         {list.length ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{list.map((c, i) => <div key={c.id} data-reveal style={delay((i % 3) * 70)}><CourseCard course={c} /></div>)}</div>
-        ) : <Empty title="No courses match">Try clearing a filter or search term.</Empty>}
+        ) : <Empty title={owned.length ? "You're enrolled in every course that matches" : "No courses match"}>{owned.length ? "Try another exam or clear the filters." : "Try clearing a filter or search term."}</Empty>}
       </div>
     </main>
   );

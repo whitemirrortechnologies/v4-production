@@ -8,9 +8,13 @@ import { Logo } from "@/components/logo";
 import { btn } from "@/components/ui";
 import { signOut } from "@/app/(auth)/actions";
 
-const LINKS = [
+const GUEST_LINKS = [
   { href: "/", label: "Home" },
   { href: "/exams", label: "Exams" },
+  { href: "/courses", label: "Courses" },
+];
+const USER_LINKS = [
+  { href: "/app", label: "Dashboard" },
   { href: "/courses", label: "Courses" },
   { href: "/app/practice", label: "Practice" },
   { href: "/app/tests", label: "Tests" },
@@ -20,12 +24,13 @@ export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: s
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
-  const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  const LINKS = signedIn ? USER_LINKS : GUEST_LINKS;
+  const active = (href: string) => (href === "/" || href === "/app" ? path === href || (href === "/app" && path.startsWith("/app/learn")) : path.startsWith(href));
 
   return (
     <header className="sticky top-0 z-40 border-b border-night-line bg-night">
       <div className="mx-auto flex h-16 max-w-[90rem] items-center justify-between gap-4 px-4 sm:px-10">
-        <Link href="/" aria-label={`${name} home`}><Logo name={name} /></Link>
+        <Link href={signedIn ? "/app" : "/"} aria-label={`${name} home`}><Logo name={name} /></Link>
 
         <nav aria-label="Main" className="hidden h-full items-stretch gap-1 md:flex">
           {LINKS.map((l) => (

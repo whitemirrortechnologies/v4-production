@@ -4,12 +4,12 @@ import { CourseArt } from "@/components/course-art";
 import { duration, rupees } from "@/lib/format";
 import { priceOf, type CatalogCourse } from "@/lib/catalog";
 
-export function CourseCard({ course }: { course: CatalogCourse }) {
+export function CourseCard({ course, enrolled, progress }: { course: CatalogCourse; enrolled?: boolean; progress?: { done: number; total: number; last: string | null } }) {
   const price = priceOf(course.product);
   const onSale = course.product?.sale_price_paise != null && course.product.sale_price_paise < course.product.price_paise;
   const tag = course.exam.code.split("_")[0];
   return (
-    <Link href={`/courses/${course.slug}`}
+    <Link href={enrolled ? `/app/learn/${course.slug}${progress?.last ? `/${progress.last}` : ""}` : `/courses/${course.slug}`}
       className="lift group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper hover:border-line-strong">
       <CourseArt title={course.title} slug={course.slug} tag={tag} className="aspect-[16/9]" />
       <div className="flex flex-1 flex-col p-5">
@@ -21,6 +21,18 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
           <span>{duration(course.stats?.total_duration_seconds)}</span>
           {(course.stats?.free_preview_count ?? 0) > 0 && <span className="font-semibold text-violet-600">Free preview</span>}
         </p>
+        {enrolled ? (
+          <div className="mt-auto pt-5">
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-wash"><div className="h-full rounded-full bg-violet-500" style={{ width: `${progress?.total ? Math.round((progress.done / progress.total) * 100) : 0}%` }} /></div>
+              <span className="text-xs font-semibold tabular-nums">{progress?.total ? Math.round((progress.done / progress.total) * 100) : 0}%</span>
+            </div>
+            <div className="mt-4 flex items-center justify-between">
+              <span className="rounded-full bg-good/10 px-2.5 py-0.5 text-xs font-semibold text-good">Enrolled</span>
+              <span className="flex items-center gap-1.5 text-sm font-semibold">{progress?.done ? "Continue" : "Start learning"} <Arrow className="transition-transform duration-500 ease-spring group-hover:translate-x-1" /></span>
+            </div>
+          </div>
+        ) : (
         <div className="mt-auto flex items-center justify-between pt-5">
           <p className="text-lg font-bold">
             {price == null ? "—" : rupees(price)}
@@ -28,6 +40,7 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
           </p>
           <span className="flex items-center gap-1.5 text-sm font-semibold">View course <Arrow className="transition-transform duration-500 ease-spring group-hover:translate-x-1" /></span>
         </div>
+        )}
       </div>
     </Link>
   );

@@ -11,7 +11,8 @@ export async function SiteHeader() {
     initial={(viewer?.profile.full_name ?? viewer?.profile.email ?? "?").trim().charAt(0).toUpperCase()} />;
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const viewer = await getViewer().catch(() => null);
   return (
     <footer className="border-t border-night-line bg-night text-night-ink">
       <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr]">
@@ -28,10 +29,19 @@ export function SiteFooter() {
         </nav>
         <nav aria-label="Account" className="flex flex-col gap-2.5 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Account</p>
-          <Link className="hover:text-white" href="/login">Log in</Link>
-          <Link className="hover:text-white" href="/signup">Create account</Link>
-          <Link className="hover:text-white" href="/app">My learning</Link>
-          <Link className="hover:text-white" href="/app/settings">Settings</Link>
+          {viewer ? (
+            <>
+              <Link className="hover:text-white" href="/app">My learning</Link>
+              <Link className="hover:text-white" href="/app/practice">Practice</Link>
+              <Link className="hover:text-white" href="/app/tests">Tests</Link>
+              <Link className="hover:text-white" href="/app/settings">Settings</Link>
+            </>
+          ) : (
+            <>
+              <Link className="hover:text-white" href="/login">Log in</Link>
+              <Link className="hover:text-white" href="/signup">Create account</Link>
+            </>
+          )}
         </nav>
       </div>
       <div className="border-t border-night-line">

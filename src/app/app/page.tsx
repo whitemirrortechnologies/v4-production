@@ -7,7 +7,9 @@ import { CourseArt } from "@/components/course-art";
 import { CourseCard } from "@/components/course-card";
 import { Arrow, btn, Eyebrow } from "@/components/ui";
 import { IconPlay } from "@/components/icons";
-import { getCourses } from "@/lib/catalog";
+import { getCourses, getExams } from "@/lib/catalog";
+import { ActionForm, Submit } from "@/components/forms";
+import { setTargetExam } from "./onboarding-actions";
 import { duration } from "@/lib/format";
 
 export const metadata = { title: "My learning" };
@@ -24,6 +26,8 @@ export default async function Dashboard() {
     supabase.from("lecture_progress").select("watched_seconds, completed_at").eq("user_id", user.id),
     getCourses(),
   ]);
+  const exams = await getExams();
+  const target = exams.find((e) => e.id === profile.target_exam_id) ?? null;
   const mine = (enr ?? [])
     .filter((e) => !e.expires_at || new Date(e.expires_at) > new Date())
     .map((e) => ({ course: one(one(e.product as { course: C | C[] | null } | { course: C | C[] | null }[] | null)?.course), expires: e.expires_at }))
@@ -43,7 +47,7 @@ export default async function Dashboard() {
   const secs = (watched ?? []).reduce((n, w) => n + (w.watched_seconds ?? 0), 0);
   const completed = (watched ?? []).filter((w) => w.completed_at).length;
   const examCode = (examId: string) => all.find((c) => c.exam_id === examId)?.exam.code.split("_")[0] ?? "V4";
-  const others = all.filter((c) => !ids.includes(c.id)).slice(0, 3);
+  const others = all.filter((c) => !ids.includes(c.id) && (!target || c.exam_id === target.id)).slice(0, 3);
   const first = profile.full_name?.split(" ")[0];
 
   return (
@@ -88,7 +92,7 @@ export default async function Dashboard() {
 
         <section className="mx-auto max-w-[90rem] px-4 pt-10 sm:px-10">
           <div className="grid gap-3 sm:grid-cols-3">
-            {[["/courses", "Courses", "Browse every course"], ["/app/practice", "Practice", "Topic-wise questions with solutions"], ["/app/tests", "Tests", "Mocks under real exam conditions"]].map(([href, t, d]) => (
+            {[["/courses", "Courses", "Your courses and more"], [`/app/practice${target ? `?exam=${target.code.toLowerCase()}` : ""}`, "Practice", target ? `Topic-wise ${target.code.split("_")[0]} questions` : "Topic-wise questions with solutions"], [`/app/tests${target ? `?exam=${target.code.toLowerCase()}` : ""}`, "Tests", target ? `${target.code.split("_")[0]} mocks under exam conditions` : "Mocks under real exam conditions"]].map(([href, t, d]) => (
               <Link key={href} href={href} className="lift group flex items-center justify-between rounded-2xl border border-line bg-paper p-5">
                 <span><span className="block font-semibold">{t}</span><span className="text-sm text-ink-3">{d}</span></span><Arrow className="text-ink-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -134,9 +138,27 @@ export default async function Dashboard() {
           )}
         </section>
 
+        {!target && (
+          <section className="mx-auto max-w-[90rem] px-4 pb-14 sm:px-10">
+            <div data-reveal className="rounded-3xl border border-line bg-wash p-6 sm:p-8">
+              <p className="eyebrow">Personalise V4</p>
+              <h2 className="h2 mt-2">What are you preparing for?</h2>
+              <p className="mt-2 text-ink-3">We&apos;ll recommend courses, practice and tests for your exam. You can change this any time in Settings.</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {exams.map((e) => (
+                  <ActionForm key={e.id} action={setTargetExam}>
+                    <input type="hidden" name="exam_id" value={e.id} />
+                    <Submit variant="outline" size="lg">{e.name}</Submit>
+                  </ActionForm>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {others.length > 0 && (
           <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-10">
-            <h2 className="h2">Explore more</h2>
+            <h2 className="h2">{target ? `Recommended for ${target.code.split("_")[0]}` : "Explore more"}</h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{others.map((c, i) => <div key={c.id} data-reveal style={delay(i * 70)}><CourseCard course={c} /></div>)}</div>
           </section>
         )}

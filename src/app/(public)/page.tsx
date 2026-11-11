@@ -5,8 +5,10 @@ import type { CSSProperties } from "react";
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 import { Arrow, btn, Eyebrow } from "@/components/ui";
 import { getCourses, getExamSummaries } from "@/lib/catalog";
+import { getViewer } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const CHIPS: Record<string, string[]> = {
   GATE_CS: ["Concepts", "Courses", "Practice", "Tests", "Analytics"],
@@ -30,6 +32,8 @@ const FAQ = [
 ];
 
 export default async function Home() {
+  // Signed-in students get their personal dashboard instead of the marketing page.
+  if (await getViewer()) redirect("/app");
   const [exams, courses] = await Promise.all([getExamSummaries(), getCourses()]);
   return (
     <main id="main">

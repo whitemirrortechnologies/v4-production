@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
 import { SetupNotice } from "@/components/setup-notice";
@@ -5,6 +6,7 @@ import { Logo } from "@/components/logo";
 import { Notice } from "@/components/ui";
 import { Credit } from "@/components/credit";
 import { isSupabaseConfigured, env } from "@/lib/env";
+import { getViewer } from "@/lib/auth";
 import { signUp } from "../actions";
 
 export const metadata = { title: "Sign up" };
@@ -13,6 +15,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
   if (!isSupabaseConfigured) return <SetupNotice />;
   const { next, error } = await searchParams;
   const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : "/app";
+  if (await getViewer()) redirect(safe);
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
       <section className="on-night relative hidden overflow-hidden bg-night text-white lg:flex lg:flex-col lg:justify-between">

@@ -87,3 +87,24 @@ export const getExamSummaries = cache(async (): Promise<ExamSummary[]> => {
     }),
   );
 });
+
+export type Mine = { courseIds: Set<string>; progress: Map<string, { done: number; total: number; last: string | null }> };
+
+/** Courses the signed-in user can open (direct purchases + bundles) and their progress. Empty when signed out. */
+export const getMine = cache(async (userId: string | null): Promise<Mine> => {
+  const mine: Mine = { courseIds: new Set(), progress: new Map() };
+  if (!userId) return mine;
+  const supabase = await createClient();
+  const { data: enr } = await supabase.from("enrollments").select("product_id,expires_at").eq("user_id", userId).eq("is_active", true);
+  const live = (enr ?? []).filter((e) => !e.expires_at || new Date(e.expires_at) > new Date()).map((e) => e.product_id);
+  if (!live.length) return mine;
+  const { data: bundleItems } = await supabase.from("bundle_items").select("item_product_id").in("bundle_product_id", live);
+  const ids = [...new Set([...live, ...(bundleItems ?? []).map((b) => b.item_product_id)])];
+  const { data: products } = await supabase.from("products").select("course_id").in("id", ids).not("course_id", "is", null);
+  (products ?? []).forEach((p) => p.course_id && mine.courseIds.add(p.course_id));
+  if (mine.courseIds.size) {
+    const { data: prog } = await supabase.from("course_progress").select("course_id,completed_lectures,total_lectures,last_lecture_id").eq("user_id", userId).in("course_id", [...mine.courseIds]);
+    (prog ?? []).forEach((p) => mine.progress.set(p.course_id, { done: Number(p.completed_lectures), total: Number(p.total_lectures), last: p.last_lecture_id }));
+  }
+  return mine;
+});

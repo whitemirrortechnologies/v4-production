@@ -1,13 +1,16 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Credit } from "@/components/credit";
 import { SimpleAuthForm } from "@/components/simple-auth-form";
 import { env } from "@/lib/env";
+import { getViewer } from "@/lib/auth";
 import { requestReset } from "../actions";
 
 export const metadata = { title: "Reset your password" };
 
 export default async function Page() {
+  if (await getViewer()) redirect("/app/settings");
   return (
     <main className="flex min-h-dvh items-center justify-center px-5 py-12">
       <div className="rise w-full max-w-sm">
