@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
-import { OrbitGraphic } from "@/components/orbit-graphic";
-import { Tilt } from "@/components/motion";
+import { HeroField } from "@/components/hero-field";
 import type { CSSProperties } from "react";
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 import { Arrow, btn, Eyebrow } from "@/components/ui";
@@ -35,27 +34,30 @@ export default async function Home() {
   return (
     <main id="main">
       {/* ------- Hero ------- */}
-      {/* Hero fills exactly the first screen (below the 64px header) at every window size. */}
+      {/* Hero fills exactly the first screen (below the 65px header) at every window size. */}
       <section className="on-night relative flex min-h-[calc(100svh-65px)] flex-col overflow-hidden bg-night text-white">
-        <div className="grid-bg glow-top absolute inset-0" aria-hidden />
-        <div className="relative mx-auto grid w-full max-w-[90rem] flex-1 items-center gap-6 px-4 py-12 sm:px-10 lg:grid-cols-[1.05fr_1fr] lg:py-16">
-          <div>
+        {/* fallback / base light, then the animated field, then a scrim that keeps text readable */}
+        <div className="absolute inset-0 bg-[radial-gradient(70rem_30rem_at_50%_105%,#635bff38,transparent_70%)]" aria-hidden />
+        <HeroField />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#050505e6_0%,#050505b3_35%,transparent_60%)] lg:bg-[linear-gradient(100deg,#050505f2_0%,#050505bf_30%,#05050540_55%,transparent_75%)]" aria-hidden />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-night to-transparent" aria-hidden />
+        <div className="relative mx-auto flex w-full max-w-[90rem] flex-1 items-center px-4 py-14 sm:px-10 lg:py-20">
+          <div className="max-w-3xl">
             <div className="rise"><Eyebrow dark dot>Preparation system for GATE &amp; CAT</Eyebrow></div>
             <h1 className="display rise mt-6 text-white" style={{ animationDelay: "60ms" }}>
-              Prepare with purpose.<br /><span className="text-[#6b6b6b]">Perform with confidence.</span>
+              Prepare with purpose.<br /><span className="text-[#7a7a7a]">Perform with confidence.</span>
             </h1>
-            <p className="rise mt-7 max-w-xl text-lg leading-relaxed text-[#cfcfcf]" style={{ animationDelay: "120ms" }}>
+            <p className="rise mt-7 max-w-xl text-lg leading-relaxed text-[#d4d4d4]" style={{ animationDelay: "120ms" }}>
               A structured preparation system for GATE, CAT and the exams you&apos;re targeting.
             </p>
             <div className="rise mt-9 flex flex-wrap gap-3" style={{ animationDelay: "180ms" }}>
               <Link href="/exams/gate_cs" className={btn({ variant: "inverse", size: "lg" })}>Explore GATE</Link>
-              <Link href="/exams/cat" className={btn({ variant: "outlineDark", size: "lg" })}>Explore CAT</Link>
+              <Link href="/exams/cat" className={`${btn({ variant: "outlineDark", size: "lg" })} bg-night/40 backdrop-blur-sm`}>Explore CAT</Link>
             </div>
             <a href="#how" className="rise mt-8 inline-flex items-center gap-2 text-sm font-medium text-night-ink hover:text-white" style={{ animationDelay: "240ms" }}>
               See how V4 works <svg aria-hidden viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
             </a>
           </div>
-          <Tilt className="rise mx-auto w-full max-w-[40rem]"><OrbitGraphic className="w-full" /></Tilt>
         </div>
         <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-10">
           <ol className="hide-scrollbar flex gap-6 overflow-x-auto border-t border-night-line py-4 font-mono text-xs text-night-ink-2 sm:gap-8">
