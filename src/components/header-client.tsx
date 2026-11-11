@@ -16,9 +16,10 @@ const LINKS = [
   { href: "/app/tests", label: "Tests" },
 ];
 
-export function HeaderClient({ name, signedIn, staff }: { name: string; signedIn: boolean; staff: boolean }) {
+export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: string; signedIn: boolean; staff: boolean; initial?: string }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 
   return (
@@ -38,11 +39,15 @@ export function HeaderClient({ name, signedIn, staff }: { name: string; signedIn
 
         <div className="hidden items-center gap-2 md:flex">
           {signedIn ? (
-            <>
-              {staff && <Link href="/admin" className="px-3 text-sm font-medium text-night-ink hover:text-white">Admin</Link>}
-              <Link href="/app" className="px-3 text-sm font-medium text-night-ink hover:text-white">My learning</Link>
-              <form action={signOut}><button className="px-3 text-sm font-medium text-night-ink hover:text-white">Sign out</button></form>
-            </>
+            <details className="relative" onToggle={(e) => setMenu((e.currentTarget as HTMLDetailsElement).open)} open={menu}>
+              <summary aria-label="Account menu" className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-white text-sm font-bold text-ink hover:bg-line">{initial}</summary>
+              <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-night-line bg-night-3 py-1.5 text-sm shadow-lift" onClick={() => setMenu(false)}>
+                <Link href="/app" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">My learning</Link>
+                <Link href="/app/settings" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">Settings</Link>
+                {staff && <Link href="/admin" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">Admin console</Link>}
+                <form action={signOut} className="mt-1 border-t border-night-line pt-1"><button className="block w-full px-4 py-2 text-left text-night-ink hover:bg-white/5 hover:text-white">Sign out</button></form>
+              </div>
+            </details>
           ) : (
             <>
               <Link href="/login" className="px-3 text-sm font-semibold text-white">Log in</Link>
@@ -72,6 +77,7 @@ export function HeaderClient({ name, signedIn, staff }: { name: string; signedIn
               <>
                 {staff && <Link href="/admin" onClick={() => setOpen(false)} className={btn({ variant: "outlineDark" })}>Admin</Link>}
                 <Link href="/app" onClick={() => setOpen(false)} className={btn({ variant: "inverse" })}>My learning</Link>
+                <Link href="/app/settings" onClick={() => setOpen(false)} className={btn({ variant: "outlineDark" })}>Settings</Link>
                 <form action={signOut}><button className={clsx(btn({ variant: "outlineDark" }), "w-full")}>Sign out</button></form>
               </>
             ) : (

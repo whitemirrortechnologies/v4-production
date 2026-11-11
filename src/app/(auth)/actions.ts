@@ -37,7 +37,7 @@ export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     ...parsed.data,
-    options: { data: { full_name: name }, emailRedirectTo: `${origin}/app` },
+    options: { data: { full_name: name }, emailRedirectTo: `${origin}/auth/callback?next=/app` },
   });
   if (error) return { error: error.message };
   if (!data.session) return { message: "Check your email to confirm your account, then sign in." };
@@ -48,4 +48,25 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+export async function requestReset(_: AuthState, form: FormData): Promise<AuthState> {
+  const parsed = email.safeParse(form.get("email"));
+  if (!parsed.success) return { error: "Enter a valid email address" };
+  const h = await headers();
+  const origin = h.get("origin") ?? `https://${h.get("host")}`;
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(parsed.data, { redirectTo: `${origin}/auth/callback?next=/reset-password` });
+  // Same message whether or not the account exists (don't reveal who has an account).
+  return { message: "If an account exists for that email, a reset link is on its way. Check your inbox and spam folder." };
+}
+
+export async function setNewPassword(_: AuthState, form: FormData): Promise<AuthState> {
+  const pw = String(form.get("password") ?? "");
+  if (pw.length < 6) return { error: "Password must be at least 6 characters" };
+  if (pw !== String(form.get("confirm") ?? "")) return { error: "Passwords don't match" };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  if (error) return { error: error.message.includes("session") ? "This reset link has expired. Request a new one." : error.message };
+  redirect("/app?password=updated");
 }

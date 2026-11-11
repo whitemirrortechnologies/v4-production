@@ -30,6 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
           <h1 className="h1" style={{ fontSize: "2.25rem" }}>Welcome back</h1>
           <p className="mb-8 mt-2 text-ink-3">Log in to continue your preparation.</p>
           {error === "blocked" && <div className="mb-4"><Notice tone="error">This account has been suspended.</Notice></div>}
+          {error === "link" && <div className="mb-4"><Notice tone="error">That link is invalid or has expired. Try again.</Notice></div>}
           <AuthForm mode="login" action={signIn} next={safe} />
         </div>
       </section>

@@ -6,7 +6,8 @@ import { Logo } from "@/components/logo";
 
 export async function SiteHeader() {
   const viewer = await getViewer().catch(() => null);
-  return <HeaderClient name={env.siteName} signedIn={!!viewer} staff={!!viewer && viewer.profile.role !== "student"} />;
+  return <HeaderClient name={env.siteName} signedIn={!!viewer} staff={!!viewer && viewer.profile.role !== "student"}
+    initial={(viewer?.profile.full_name ?? viewer?.profile.email ?? "?").trim().charAt(0).toUpperCase()} />;
 }
 
 export function SiteFooter() {
@@ -29,10 +30,17 @@ export function SiteFooter() {
           <Link className="hover:text-white" href="/login">Log in</Link>
           <Link className="hover:text-white" href="/signup">Create account</Link>
           <Link className="hover:text-white" href="/app">My learning</Link>
+          <Link className="hover:text-white" href="/app/settings">Settings</Link>
         </nav>
       </div>
       <div className="border-t border-night-line">
-        <p className="mx-auto max-w-[90rem] px-4 py-5 text-xs text-night-ink-2 sm:px-10">© {new Date().getFullYear()} {env.siteName}. All rights reserved.</p>
+        <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-night-ink-2 sm:px-10">
+          <p>© {new Date().getFullYear()} {env.siteName}. All rights reserved.</p>
+          <nav aria-label="Legal" className="flex flex-wrap gap-5">
+            <Link className="hover:text-white" href="/terms">Terms</Link><Link className="hover:text-white" href="/privacy">Privacy</Link>
+            <Link className="hover:text-white" href="/refund-policy">Refunds</Link><Link className="hover:text-white" href="/contact">Contact</Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );

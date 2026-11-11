@@ -33,11 +33,12 @@ npm run dev
 
 | Area | Status |
 |---|---|
-| Design system (black & white + violet tint, light/dark) | ✅ |
-| Sign in / sign up (email + password) | ✅ (final login options come last) |
-| Public: home, exam pages, course list, course detail with real counts | ✅ |
-| Admin: overview, syllabus manager, courses + curriculum editor, lecture video upload, pricing, users, orders | ✅ |
-| Student: dashboard, video player with resume + speed + shortcuts, demo checkout with coupons | ✅ |
-| Question bank + practice | next |
-| Test builder + exam screen + results | next |
-| Analytics, Razorpay | later |
+| Design system (black/indigo, Plus Jakarta + Inter), skeletons, toasts, error/404 pages | ✅ |
+| Accounts: sign up, log in, forgot/reset password, settings, purchases list | ✅ |
+| Public: home, exams, courses (search/filters), course detail, legal + contact pages, sitemap | ✅ |
+| Admin: overview, syllabus, courses + curriculum, video + notes upload, pricing, users, orders | ✅ |
+| Admin: question bank (MCQ/MSQ/NAT/TITA, LaTeX, PYQs, passages), tests builder, test series | ✅ |
+| Student: dashboard, video player with resume, practice with solutions, exam screen, results | ✅ |
+| Demo checkout with coupons | ✅ (Razorpay later) |
+
+**Before launch:** see [docs/LAUNCH_TODO.md](docs/LAUNCH_TODO.md).
