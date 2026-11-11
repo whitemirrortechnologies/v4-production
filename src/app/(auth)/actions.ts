@@ -1,0 +1,50 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+
+export type AuthState = { error?: string; message?: string } | null;
+
+/** Only allow same-site relative redirects. */
+const safeNext = (n: FormDataEntryValue | null) =>
+  typeof n === "string" && n.startsWith("/") && !n.startsWith("//") ? n : "/app";
+
+const creds = z.object({
+  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address")),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
+  const parsed = creds.safeParse({ email: form.get("email"), password: form.get("password") });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) return { error: "Incorrect email or password" };
+  redirect(safeNext(form.get("next")));
+}
+
+export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
+  const name = String(form.get("full_name") ?? "").trim();
+  if (name.length < 2) return { error: "Please enter your name" };
+  const parsed = creds.safeParse({ email: form.get("email"), password: form.get("password") });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const h = await headers();
+  const origin = h.get("origin") ?? `https://${h.get("host")}`;
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp({
+    ...parsed.data,
+    options: { data: { full_name: name }, emailRedirectTo: `${origin}/app` },
+  });
+  if (error) return { error: error.message };
+  if (!data.session) return { message: "Check your email to confirm your account, then sign in." };
+  redirect(safeNext(form.get("next")));
+}
+
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
+}

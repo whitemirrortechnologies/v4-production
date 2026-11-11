@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens: black & white with a purple tint ---------- */
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --color-ink: oklch(0.16 0 0);
+  --color-ink-2: oklch(0.38 0 0);
+  --color-ink-3: oklch(0.55 0 0);
+  --color-line: oklch(0.92 0 0);
+  --color-wash: oklch(0.975 0 0);
+  --color-paper: oklch(1 0 0);
+
+  --color-violet-50: oklch(0.97 0.012 295);
+  --color-violet-100: oklch(0.94 0.03 295);
+  --color-violet-300: oklch(0.8 0.1 295);
+  --color-violet-500: oklch(0.58 0.2 295);
+  --color-violet-600: oklch(0.5 0.22 295);
+  --color-violet-900: oklch(0.28 0.1 295);
+
+  --color-good: oklch(0.62 0.15 150);
+  --color-bad: oklch(0.6 0.2 25);
+
+  --radius-card: 1.25rem;
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.06);
+  --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.05), 0 16px 40px oklch(0 0 0 / 0.1);
+  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dark follows the device setting. Same tokens, inverted. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ink: oklch(0.97 0 0);
+    --color-ink-2: oklch(0.78 0 0);
+    --color-ink-3: oklch(0.62 0 0);
+    --color-line: oklch(0.27 0 0);
+    --color-wash: oklch(0.2 0 0);
+    --color-paper: oklch(0.145 0 0);
+    --color-violet-50: oklch(0.22 0.04 295);
+    --color-violet-100: oklch(0.28 0.06 295);
+    --color-violet-300: oklch(0.55 0.15 295);
+    --color-violet-500: oklch(0.7 0.17 295);
+    --color-violet-600: oklch(0.78 0.14 295);
+    --color-violet-900: oklch(0.9 0.05 295);
+    --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.4);
+    --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.5), 0 16px 40px oklch(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}
+
+html {
+  color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-padding-top: 5rem;
+  /* Native scrolling only: no scroll-jacking, no smooth-scroll hijack. */
+  overscroll-behavior-y: none;
+}
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  min-height: 100dvh;
+}
+::selection { background: var(--color-violet-100); }
+:focus-visible { outline: 2px solid var(--color-violet-500); outline-offset: 2px; border-radius: 0.5rem; }
+
+/* Soft purple glow used behind hero sections ("grade"). Static: no animation, no scroll cost. */
+.glow-violet {
+  background:
+    radial-gradient(60rem 28rem at 50% -10%, oklch(0.9 0.08 295 / 0.55), transparent 70%),
+    radial-gradient(40rem 20rem at 85% 10%, oklch(0.93 0.05 320 / 0.4), transparent 70%);
+}
+@media (prefers-color-scheme: dark) {
+  .glow-violet {
+    background:
+      radial-gradient(60rem 28rem at 50% -10%, oklch(0.35 0.14 295 / 0.55), transparent 70%),
+      radial-gradient(40rem 20rem at 85% 10%, oklch(0.3 0.1 320 / 0.35), transparent 70%);
+  }
+}
+.text-grade {
+  background-image: linear-gradient(100deg, var(--color-ink) 0%, var(--color-violet-500) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Long lists render only what's on screen. */
+.cv-auto { content-visibility: auto; contain-intrinsic-size: auto 96px; }
+
+/* Entrance: cheap (opacity + transform only), off when the user prefers reduced motion. */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.5s var(--ease-apple) both; }
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+  * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+.scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.hide-scrollbar { scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar { display: none; }
