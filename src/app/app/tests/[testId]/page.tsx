@@ -54,7 +54,7 @@ export default async function TestIntro({ params }: { params: Promise<{ testId: 
               : <li>One timer for the whole test. You can move freely between sections.</li>}
             <li>The timer runs on our server. Refreshing or closing the tab won&apos;t pause it, and the test submits itself when time is up.</li>
             {cat ? <li>MCQ: +3 for correct, −1 for wrong. TITA (type in the answer): +3, no negative marks.</li>
-              : <li>MCQ: 1-mark questions lose 1/3, 2-mark questions lose 2/3 for a wrong answer. MSQ and NAT have no negative marks; MSQ needs every correct option.</li>}
+              : <li>Marks and negative marks are shown on every question. A wrong MCQ answer can lose marks; unanswered questions never do.</li>}
             <li>Use <b>Mark for review</b> to come back later. Answers marked for review are still evaluated.</li>
           </ul>
           {t.instructions && <Rich text={t.instructions} className="mt-5 border-t border-line pt-5 text-[15px]" />}

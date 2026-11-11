@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { IconBook, IconChart, IconTarget, IconVideo, IconCheckCircle, IconClock } from "@/components/icons";
 
-const ICONS = { overview: IconChart, syllabus: IconTarget, courses: IconVideo, questions: IconBook, tests: IconClock, users: IconCheckCircle, orders: IconCheckCircle } as const;
+const ICONS = { exams: IconBook, overview: IconChart, syllabus: IconTarget, courses: IconVideo, questions: IconBook, tests: IconClock, users: IconCheckCircle, orders: IconCheckCircle } as const;
 
 export function AdminNav({ links }: { links: { href: string; label: string; icon: keyof typeof ICONS }[] }) {
   const path = usePathname();

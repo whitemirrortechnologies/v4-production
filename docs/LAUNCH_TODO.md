@@ -10,8 +10,10 @@ for me to build**. Work top to bottom.
 - [ ] **Faster sign-in checks.** Supabase → Project Settings → **JWT Keys** (or "JWT Signing Keys"): if it still
       says "Legacy JWT secret", click **Migrate** to the new asymmetric signing keys. Then the app verifies sessions
       without a network call on every page. New projects already have this.
-- [ ] **Remove GATE from the database.** Supabase → SQL Editor → run `supabase/manual/delete-gate.sql` (permanent) or
-      `supabase/manual/remove-gate.sql` (just hides it). Until you do, GATE rows are still in your database.
+- [ ] **Hide GATE on your live site.** Easiest: sign in as admin → **Admin → Exams** → click **Hide from students** on GATE
+      (takes effect within a minute). To remove its data completely, run `supabase/manual/delete-gate.sql` in the
+      Supabase SQL Editor (permanent) or `supabase/manual/remove-gate.sql` (just hides + archives).
+      To bring GATE or any other exam back later: **Admin → Exams → Add an exam**.
 
 ## A. Your to-do: right now, to test everything that's built
 

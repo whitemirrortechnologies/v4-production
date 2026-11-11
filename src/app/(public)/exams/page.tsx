@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { delay } from "@/lib/motion";
 import { Arrow, btn, Eyebrow } from "@/components/ui";
-import { getExamSummaries } from "@/lib/catalog";
+import { getExamInfo, getExamSummaries } from "@/lib/catalog";
+import { redirect } from "next/navigation";
 
 export const metadata = { title: "Exams" };
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ExamsPage() {
+  const info = await getExamInfo();
+  if (info.first && info.single) redirect(`/exams/${info.first.code.toLowerCase()}`);
   const exams = await getExamSummaries();
   return (
     <main id="main" className="mx-auto max-w-[90rem] px-4 py-16 sm:px-10">

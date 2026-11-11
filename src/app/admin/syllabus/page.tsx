@@ -7,7 +7,7 @@ import { ActionForm, IconSubmit, InlineEdit, Submit } from "@/components/forms";
 import { IconDown, IconPlus, IconTrash, IconUp } from "@/components/icons";
 import type { Exam, Section, Topic } from "@/lib/types";
 import {
-  addExam, addSection, addTopic, deleteSection, deleteTopic, moveItem, moveTopicQuestions,
+  addSection, addTopic, deleteSection, deleteTopic, moveItem, moveTopicQuestions,
   renameSection, renameTopic, updateExam,
 } from "./actions";
 
@@ -98,15 +98,7 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
             {e.name}{!e.is_active && " · hidden"}
           </Link>
         ))}
-        <details className="relative">
-          <summary className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-dashed border-line-strong px-4 py-2 text-sm font-semibold text-ink-3 hover:bg-wash"><IconPlus size={14} />New exam</summary>
-          <ActionForm action={addExam} resetOnSuccess className="absolute left-0 z-20 mt-2 w-80 space-y-3 rounded-2xl border border-line bg-paper p-5 shadow-lift">
-            <label className="block"><Label hint="e.g. XAT">Code</Label><Input name="code" required /></label>
-            <label className="block"><Label>Name</Label><Input name="name" required /></label>
-            <label className="block"><Label>Description</Label><Input name="description" /></label>
-            <Submit size="sm">Add exam</Submit>
-          </ActionForm>
-        </details>
+        <Link href="/admin/exams" className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-dashed border-line-strong px-4 py-2 text-sm font-semibold text-ink-3 hover:bg-wash"><IconPlus size={14} />Add or manage exams</Link>
       </div>
 
       {!exam ? <Card className="p-8 text-center text-ink-3">No exams yet. Add one above.</Card> : (

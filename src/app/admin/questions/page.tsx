@@ -45,9 +45,9 @@ export default async function QuestionsPage({ searchParams }: { searchParams: Pr
       <PageHeader eyebrow="Content" title="Questions" subtitle="The bank used by practice and tests. Past-year questions carry their year."
         action={<div className="flex gap-2"><LinkButton href={`/admin/questions/groups?exam=${exam?.code ?? ""}`} variant="outline" size="sm">Passages</LinkButton><LinkButton href="/admin/questions/new" size="sm"><IconPlus size={14} />New question</LinkButton></div>} />
 
-      <div className="hide-scrollbar mb-5 flex gap-2 overflow-x-auto">
+      {exams.length > 1 && <div className="hide-scrollbar mb-5 flex gap-2 overflow-x-auto">
         {exams.map((e) => <Link key={e.id} href={`?exam=${e.code}`} className={clsx("whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold", e.id === exam?.id ? "bg-ink text-white" : "bg-wash text-ink-2 hover:bg-line")}>{e.name}</Link>)}
-      </div>
+      </div>}
 
       <form className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_0.8fr_0.8fr_0.8fr_auto_auto]">
         <input type="hidden" name="exam" value={exam?.code ?? ""} />

@@ -4,7 +4,7 @@ import { HeroField } from "@/components/hero-field";
 import type { CSSProperties } from "react";
 const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 import { Arrow, btn, Eyebrow } from "@/components/ui";
-import { getCourses, getExamSummaries } from "@/lib/catalog";
+import { getCourses, getExamInfo, getExamSummaries } from "@/lib/catalog";
 import { getViewer } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -23,7 +23,7 @@ const LOOP = [
   ["04", "Analyze", "Measured progress", "Accuracy by topic, section performance and one clear recommendation for what to do next."],
 ];
 const FAQ = [
-  ["Which exam does V4 cover?", "CAT, the Common Admission Test for the IIMs and other top B-schools: VARC, DILR and Quantitative Aptitude, with courses, topic-wise practice and full mocks."],
+  ["Which exams does V4 cover?", "Courses, topic-wise practice and full mocks for the exams shown on this page. More exams are added regularly."],
   ["Is there free content?", "Yes. In most courses a few lectures, tests and practice questions are free so you can try before you buy. What is free is chosen per course."],
   ["How do payments work?", "Pick a course, apply a coupon if you have one, and enroll at checkout. Checkout currently runs in demo mode while the payment gateway is being connected."],
   ["Can I prepare on my phone?", "Yes. Every page is built mobile-first, and the lecture player remembers where you stopped on any device."],
@@ -33,7 +33,9 @@ const FAQ = [
 export default async function Home() {
   // Signed-in students get their personal dashboard instead of the marketing page.
   if (await getViewer()) redirect("/app");
-  const [exams, courses] = await Promise.all([getExamSummaries(), getCourses()]);
+  const [exams, courses, info] = await Promise.all([getExamSummaries(), getCourses(), getExamInfo()]);
+  const first = info.first;
+  const onlyCat = info.single && first?.code === "CAT";
   return (
     <main id="main">
       {/* ------- Hero ------- */}
@@ -46,16 +48,26 @@ export default async function Home() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-night to-transparent" aria-hidden />
         <div className="relative mx-auto flex w-full max-w-[90rem] flex-1 items-center px-4 py-14 sm:px-10 lg:py-20">
           <div className="max-w-3xl">
-            <div className="rise"><Eyebrow dark dot>Preparation system for CAT</Eyebrow></div>
+            <div className="rise"><Eyebrow dark dot>Preparation system for {info.label}</Eyebrow></div>
             <h1 className="display rise mt-6 text-white" style={{ animationDelay: "60ms" }}>
               Prepare with purpose.<br /><span className="text-[#7a7a7a]">Perform with confidence.</span>
             </h1>
             <p className="rise mt-7 max-w-xl text-lg leading-relaxed text-[#d4d4d4]" style={{ animationDelay: "120ms" }}>
-              Structured courses, topic-wise practice and full-length mocks for VARC, DILR and Quant, in one calm place.
+              {onlyCat ? "Structured courses, topic-wise practice and full-length mocks for VARC, DILR and Quant, in one calm place." : "Structured courses, topic-wise practice and full-length mocks, in one calm place."}
             </p>
             <div className="rise mt-9 flex flex-wrap gap-3" style={{ animationDelay: "180ms" }}>
-              <Link href="/exams/cat" className={btn({ variant: "inverse", size: "lg" })}>Explore CAT</Link>
-              <Link href="/courses" className={`${btn({ variant: "outlineDark", size: "lg" })} bg-night/40 backdrop-blur-sm`}>Browse courses</Link>
+              {info.single ? (
+                <>
+                  <Link href="/courses" className={btn({ variant: "inverse", size: "lg" })}>Browse courses</Link>
+                  <Link href="/signup" className={`${btn({ variant: "outlineDark", size: "lg" })} bg-night/40 backdrop-blur-sm`}>Create free account</Link>
+                </>
+              ) : (
+                <>
+                  {info.exams.slice(0, 2).map((e, i) => (
+                    <Link key={e.id} href={`/exams/${e.code.toLowerCase()}`} className={i === 0 ? btn({ variant: "inverse", size: "lg" }) : `${btn({ variant: "outlineDark", size: "lg" })} bg-night/40 backdrop-blur-sm`}>Explore {e.code.split("_")[0]}</Link>
+                  ))}
+                </>
+              )}
             </div>
             <a href="#how" className="tap rise mt-8 inline-flex items-center gap-2 text-sm font-medium text-night-ink hover:text-white" style={{ animationDelay: "240ms" }}>
               See how V4 works <svg aria-hidden viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
@@ -74,7 +86,7 @@ export default async function Home() {
       {/* ------- Exams ------- */}
       <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-10 lg:py-28">
         <div data-reveal><Eyebrow>{exams.length > 1 ? "Choose your exam" : "The exam"}</Eyebrow>
-        <h2 className="h1 mt-3">{exams.length > 1 ? "What are you preparing for?" : "Everything for CAT, in one place"}</h2></div>
+        <h2 className="h1 mt-3">{exams.length > 1 ? "What are you preparing for?" : `Everything for ${info.label}, in one place`}</h2></div>
         <div className={`mt-12 grid gap-6 ${exams.length > 1 ? "lg:grid-cols-2" : ""}`}>
           {exams.map((e, i) => (
             <div key={e.id} data-reveal style={delay(i * 90)} className="flex min-w-0">
@@ -146,7 +158,7 @@ export default async function Home() {
           <div data-reveal><Eyebrow dark>How V4 works</Eyebrow>
           <h2 className="h1 mt-3">Three steps. Then repeat.</h2></div>
           <ol className="mt-14 grid gap-0 md:grid-cols-3">
-            {[["01", "Start with the basics", "Learn VARC, DILR and Quant concept by concept with structured lectures."],
+            {[["01", "Start with the basics", "Learn every topic concept by concept with structured lectures."],
               ["02", "Follow a clear path", "Work through structured lectures, then practise each topic while it is fresh."],
               ["03", "Measure and improve", "Take tests, see exactly where marks are lost, and let V4 point you to the next step."]].map(([n, t, d]) => (
               <li key={n} data-reveal style={delay(Number(n) * 80)} className="border-t border-night-line pb-8 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">

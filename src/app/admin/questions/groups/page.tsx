@@ -24,7 +24,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
     <>
       <Link href="/admin/questions" className="tap text-sm text-ink-3 hover:text-ink">← Questions</Link>
       <div className="mt-3"><PageHeader title="Passages & data sets" subtitle="Shared text for reading comprehension, DILR sets or common-data questions. Attach questions to them in the question editor." /></div>
-      <div className="mb-6 flex gap-2">{exams.map((e) => <Link key={e.id} href={`?exam=${e.code}`} className={clsx("rounded-lg px-4 py-2 text-sm font-semibold", e.id === exam?.id ? "bg-ink text-white" : "bg-wash text-ink-2 hover:bg-line")}>{e.name}</Link>)}</div>
+      {exams.length > 1 && <div className="mb-6 flex gap-2">{exams.map((e) => <Link key={e.id} href={`?exam=${e.code}`} className={clsx("rounded-lg px-4 py-2 text-sm font-semibold", e.id === exam?.id ? "bg-ink text-white" : "bg-wash text-ink-2 hover:bg-line")}>{e.name}</Link>)}</div>}
       {exam && (
         <div className="grid max-w-5xl gap-5">
           <Card className="p-5">

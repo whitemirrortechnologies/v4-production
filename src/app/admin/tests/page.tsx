@@ -19,9 +19,11 @@ export default async function TestsAdmin() {
     <>
       <PageHeader eyebrow="Content" title="Tests" subtitle="Mocks, sectionals, topic tests and past papers." action={<LinkButton href="/admin/series" variant="outline" size="sm">Test series</LinkButton>} />
       <Card className="mb-8 p-5">
-        <ActionForm action={createTest} className="grid gap-4 sm:grid-cols-[1fr_12rem_10rem_8rem_auto] sm:items-end">
+        <ActionForm action={createTest} className={`grid gap-4 ${(exams ?? []).length > 1 ? "sm:grid-cols-[1fr_12rem_10rem_8rem_auto]" : "sm:grid-cols-[1fr_10rem_8rem_auto]"} sm:items-end`}>
           <label className="block"><Label>New test title</Label><Input name="title" placeholder="CAT Full Mock 1" required /></label>
-          <label className="block"><Label>Exam</Label><Select name="exam_id">{(exams ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select></label>
+          {(exams ?? []).length > 1
+            ? <label className="block"><Label>Exam</Label><Select name="exam_id">{(exams ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select></label>
+            : <input type="hidden" name="exam_id" value={exams?.[0]?.id ?? ""} />}
           <label className="block"><Label>Type</Label><Select name="kind">{Object.entries(KIND).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</Select></label>
           <label className="block"><Label hint="min">Duration</Label><Input name="duration_minutes" type="number" min={1} placeholder="120" /></label>
           <Submit>Create</Submit>

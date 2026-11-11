@@ -26,9 +26,9 @@ export default async function Settings() {
               <label className="block sm:col-span-2"><Label>Full name</Label><Input name="full_name" defaultValue={profile.full_name ?? ""} autoComplete="name" required /></label>
               <label className="block"><Label>Email</Label><Input value={user.email ?? ""} disabled readOnly className="bg-wash text-ink-3" /></label>
               <label className="block"><Label hint="optional">Phone</Label><Input name="phone" type="tel" defaultValue={(profile as { phone?: string }).phone ?? ""} autoComplete="tel" /></label>
-              <label className="block sm:col-span-2"><Label>Preparing for</Label>
+              {exams.length > 1 && <label className="block sm:col-span-2"><Label>Preparing for</Label>
                 <Select name="target_exam_id" defaultValue={profile.target_exam_id ?? ""}><option value="">Not decided</option>{exams.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select>
-              </label>
+              </label>}
               <div><Submit>Save profile</Submit></div>
             </ActionForm>
           </Card>

@@ -31,13 +31,13 @@ export default async function PracticeHome({ searchParams }: { searchParams: Pro
     <>
       <SiteHeader />
       <main id="main" className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
-        <Eyebrow>Practice{exam ? ` · ${exam.code.split("_")[0]}` : ""}</Eyebrow>
+        <Eyebrow>Practice{exam && exams.length > 1 ? ` · ${exam.code.split("_")[0]}` : ""}</Eyebrow>
         <h1 className="h1 mt-3">Practise by topic</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">Pick topics and difficulty, and get an explanation after every answer.</p>
 
-        <div className="mt-8 inline-flex rounded-lg border border-line bg-wash p-1">
+        {exams.length > 1 && <div className="mt-8 inline-flex rounded-lg border border-line bg-wash p-1">
           {exams.map((e) => <Link key={e.id} href={`?exam=${e.code.toLowerCase()}`} className={clsx("rounded-md px-5 py-1.5 text-sm font-semibold", e.id === exam?.id ? "bg-ink text-white" : "text-ink-3 hover:text-ink")}>{e.code.split("_")[0]}</Link>)}
-        </div>
+        </div>}
 
         {access !== true && (
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-violet-50 px-5 py-4">

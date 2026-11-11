@@ -2,19 +2,24 @@ import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
-import { env } from "@/lib/env";
+import { env, isSupabaseConfigured } from "@/lib/env";
+import { getExamInfo } from "@/lib/catalog";
 import { Toaster } from "@/components/toaster";
 import { Motion } from "@/components/motion";
 import { NavProgress } from "@/components/nav-progress";
 import { Suspense } from "react";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
-  openGraph: { type: "website", siteName: env.siteName },
-  twitter: { card: "summary_large_image" },
-  title: { default: `${env.siteName} — Learn. Practice. Test.`, template: `%s · ${env.siteName}` },
-  description: "Courses, topic-wise practice and full-length mock tests for CAT: VARC, DILR and Quant.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let label = "";
+  if (isSupabaseConfigured) { try { label = (await getExamInfo()).label; } catch { /* database unreachable: keep generic */ } }
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    title: { default: `${env.siteName} — Learn. Practice. Test.`, template: `%s · ${env.siteName}` },
+    description: `Courses, topic-wise practice and full-length mock tests${label ? ` for ${label}` : ""}.`,
+    openGraph: { type: "website", siteName: env.siteName },
+    twitter: { card: "summary_large_image" },
+  };
+}
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

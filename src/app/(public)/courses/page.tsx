@@ -60,9 +60,9 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
       </form>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-lg border border-line bg-wash p-1" role="tablist" aria-label="Exam">
+        {exams.length > 1 ? <div className="inline-flex rounded-lg border border-line bg-wash p-1" role="tablist" aria-label="Exam">
           {tab("All")}{exams.map((e) => tab(e.code.split("_")[0], e.code))}
-        </div>
+        </div> : <span />}
         <p className="text-sm text-ink-3">{list.length} {list.length === 1 ? "course" : "courses"}</p>
       </div>
 

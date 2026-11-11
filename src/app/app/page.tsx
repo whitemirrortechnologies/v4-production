@@ -26,7 +26,7 @@ export default async function Dashboard() {
     getCourses(),
     getExams(),
   ]);
-  const target = exams.find((e) => e.id === profile.target_exam_id) ?? null;
+  const target = exams.length === 1 ? exams[0] : exams.find((e) => e.id === profile.target_exam_id) ?? null;
   const owned = all.filter((c) => mine.courseIds.has(c.id));
   const ids = owned.map((c) => c.id);
   const progressOf = (id: string) => mine.progress.get(id);
@@ -133,7 +133,7 @@ export default async function Dashboard() {
           )}
         </section>
 
-        {!target && (
+        {!target && exams.length > 1 && (
           <section className="mx-auto max-w-[90rem] px-4 pb-14 sm:px-10">
             <div data-reveal className="rounded-3xl border border-line bg-wash p-6 sm:p-8">
               <p className="eyebrow">Personalise V4</p>
@@ -153,7 +153,7 @@ export default async function Dashboard() {
 
         {others.length > 0 && (
           <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-10">
-            <h2 className="h2">{target ? `Recommended for ${target.code.split("_")[0]}` : "Explore more"}</h2>
+            <h2 className="h2">{target && exams.length > 1 ? `Recommended for ${target.code.split("_")[0]}` : "Explore more"}</h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{others.map((c, i) => <div key={c.id} data-reveal style={delay(i * 70)}><CourseCard course={c} /></div>)}</div>
           </section>
         )}

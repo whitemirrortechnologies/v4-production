@@ -12,17 +12,6 @@ const done = (error: { code?: string; message: string } | null, ok?: string): Re
   return ok ? { ok } : undefined;
 };
 
-export async function addExam(f: FormData): Promise<Result> {
-  await requireStaff();
-  const code = str(f, "code").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-  const name = str(f, "name");
-  if (!code || !name) return { error: "Enter a code and a name" };
-  const supabase = await createClient();
-  const { count } = await supabase.from("exams").select("*", { count: "exact", head: true });
-  const { error } = await supabase.from("exams").insert({ code, name, description: str(f, "description") || null, position: (count ?? 0) + 1 });
-  return done(error, "Exam added");
-}
-
 export async function updateExam(f: FormData): Promise<Result> {
   await requireStaff();
   const supabase = await createClient();

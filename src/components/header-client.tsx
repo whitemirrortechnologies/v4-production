@@ -20,11 +20,11 @@ const USER_LINKS = [
   { href: "/app/tests", label: "Tests" },
 ];
 
-export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: string; signedIn: boolean; staff: boolean; initial?: string }) {
+export function HeaderClient({ name, signedIn, staff, showExams = false, initial = "?" }: { name: string; signedIn: boolean; staff: boolean; showExams?: boolean; initial?: string }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
-  const LINKS = signedIn ? USER_LINKS : GUEST_LINKS;
+  const LINKS = signedIn ? USER_LINKS : GUEST_LINKS.filter((l) => showExams || l.href !== "/exams");
   const active = (href: string) => (href === "/" || href === "/app" ? path === href || (href === "/app" && path.startsWith("/app/learn")) : path.startsWith(href));
 
   return (

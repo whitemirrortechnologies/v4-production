@@ -6,11 +6,11 @@ import { createPublicClient } from "@/lib/supabase/public";
 import type { Course, CourseStats, Exam, Product } from "@/lib/types";
 import { loadTree } from "@/lib/tree";
 
-/** Public catalog data is the same for everyone, so it's cached for 5 minutes (and purged instantly when an admin saves). */
+/** Public catalog data is the same for everyone, so it's cached for 60 seconds (and purged instantly when an admin saves). */
 export const CATALOG_TAG = "catalog";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cached = <A extends any[], R>(fn: (...a: A) => Promise<R>, key: string): ((...a: A) => Promise<R>) =>
-  unstable_cache(fn, ["catalog", key], { revalidate: 300, tags: [CATALOG_TAG] });
+  unstable_cache(fn, ["catalog", key], { revalidate: 60, tags: [CATALOG_TAG] });
 
 export type CatalogCourse = Course & { exam: Pick<Exam, "code" | "name">; stats: CourseStats | null; product: Product | null };
 
@@ -148,3 +148,14 @@ export async function getTestAccess(mine: Mine, tests: { id: string; is_free: bo
   [...(ct ?? []), ...(st ?? [])].forEach((r) => { out[r.test_id] = true; });
   return out;
 }
+
+export type ExamInfo = { exams: Exam[]; single: boolean; short: string[]; label: string; first: Exam | null };
+/**
+ * How many exams are switched on. With one, the whole site behaves as a single-exam product:
+ * no exam pickers, tabs, "Exams" menu or "What are you preparing for?" question.
+ */
+export const getExamInfo = cache(async (): Promise<ExamInfo> => {
+  const exams = await getExams();
+  const short = exams.map((e) => e.code.split("_")[0]);
+  return { exams, single: exams.length <= 1, short, label: short.join(" & ") || "your exam", first: exams[0] ?? null };
+});

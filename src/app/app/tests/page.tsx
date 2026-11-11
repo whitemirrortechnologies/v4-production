@@ -28,12 +28,12 @@ export default async function TestsHome({ searchParams }: { searchParams: Promis
     <>
       <SiteHeader />
       <main id="main" className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
-        <Eyebrow>Tests{exam ? ` · ${exam.code.split("_")[0]}` : ""}</Eyebrow>
+        <Eyebrow>Tests{exam && exams.length > 1 ? ` · ${exam.code.split("_")[0]}` : ""}</Eyebrow>
         <h1 className="h1 mt-3">Test under real conditions</h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">The real marking scheme, question palette and timers, followed by a detailed analysis.</p>
-        <div className="mt-8 inline-flex rounded-lg border border-line bg-wash p-1">
+        {exams.length > 1 && <div className="mt-8 inline-flex rounded-lg border border-line bg-wash p-1">
           {exams.map((e) => <Link key={e.id} href={`?exam=${e.code.toLowerCase()}`} className={clsx("rounded-md px-5 py-1.5 text-sm font-semibold", e.id === exam?.id ? "bg-ink text-white" : "text-ink-3 hover:text-ink")}>{e.code.split("_")[0]}</Link>)}
-        </div>
+        </div>}
 
         <div className="mt-8 space-y-3">
           {(tests ?? []).map((t, i) => {

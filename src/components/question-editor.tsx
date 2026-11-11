@@ -78,12 +78,12 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
     <div className="grid gap-6 xl:grid-cols-[1fr_28rem]">
       <div className="min-w-0 space-y-6">
         <section className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block"><Label>Exam</Label>
+          <div className={`grid gap-4 ${exams.length > 1 ? "sm:grid-cols-2" : ""}`}>
+            {exams.length > 1 && <label className="block"><Label>Exam</Label>
               <Select value={examId} onChange={(e) => { setExamId(e.target.value); setTopicId(""); setGroupId(""); const ex = exams.find((x) => x.id === e.target.value); const t2: QuestionType = ex?.code.startsWith("CAT") && (type === "msq" || type === "nat") ? "mcq" : type; setType(t2); const d = defaultMarking(ex?.code ?? "", t2); setMarks(d.marks); setNeg(d.negative); }}>
                 {exams.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
               </Select>
-            </label>
+            </label>}
             <label className="block"><Label>Topic</Label>
               <Select value={topicId} onChange={(e) => setTopicId(e.target.value)} required>
                 <option value="" disabled>Choose a topic…</option>
