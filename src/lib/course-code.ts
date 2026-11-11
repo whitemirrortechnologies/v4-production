@@ -1,6 +1,6 @@
-const SKIP = new Set(["for", "of", "the", "and", "to", "in", "a", "an", "with", "essentials", "complete", "course", "core", "basics", "fundamentals", "masterclass", "gate", "cat", "cs", "it"]);
+const SKIP = new Set(["for", "of", "the", "and", "to", "in", "a", "an", "with", "essentials", "complete", "course", "core", "basics", "fundamentals", "masterclass", "cat"]);
 
-/** Short label for course art: "Operating Systems Essentials" → "OS", "Algorithms for GATE CS" → "ALGO". */
+/** Short label for course art: "Quant: Arithmetic Core" → "QA", "Reading Comprehension" → "RC". */
 export function courseCode(title: string): string {
   const words = title.replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
   const keep = words.filter((w) => !SKIP.has(w.toLowerCase()));

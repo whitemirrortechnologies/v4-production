@@ -111,7 +111,7 @@ export default async function EditTest({ params, searchParams }: { params: Promi
               <Input name="duration_minutes" type="number" min={1} placeholder="Own timer (min)" className="h-10 w-40" />
               <Submit size="sm" className="h-10">Add section</Submit>
             </ActionForm>
-            <p className="mt-2 text-xs text-ink-3">Give <b>every</b> section its own timer for CAT-style locked sections. Leave all empty for one shared timer (GATE).</p>
+            <p className="mt-2 text-xs text-ink-3">Give <b>every</b> section its own timer for CAT-style locked sections. Leave all empty for one shared timer.</p>
           </Card>
         </div>
       )}

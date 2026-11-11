@@ -18,13 +18,12 @@ export async function SiteFooter() {
       <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Logo name={env.siteName} />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for GATE CS/IT and CAT. Learn, practise, test and improve.</p>
+          <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for CAT. Learn, practise, test and improve.</p>
         </div>
         <nav aria-label="Explore" className="flex flex-col gap-4 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Explore</p>
           <Link className="tap hover:text-white" href="/exams">Exams</Link>
           <Link className="tap hover:text-white" href="/courses">Courses</Link>
-          <Link className="tap hover:text-white" href="/exams/gate_cs">GATE</Link>
           <Link className="tap hover:text-white" href="/exams/cat">CAT</Link>
         </nav>
         <nav aria-label="Account" className="flex flex-col gap-4 text-sm">

@@ -13,6 +13,15 @@ begin
 end $$;
 grant execute on function public.t_as(uuid), public.t_expect_error(text,text) to anon, authenticated, service_role;
 
+
+-- ---------- a throwaway exam for these checks (independent of the seed) ----------
+insert into public.exams (code, name) values ('TST', 'Test exam');
+insert into public.syllabus_sections (exam_id, name) select id, 'Programming and Data Structures' from public.exams where code = 'TST';
+insert into public.topics (section_id, name, slug, position)
+  select s.id, t.name, t.slug, t.pos from public.syllabus_sections s
+  cross join (values ('Shortest Paths', 'shortest-paths', 1), ('Greedy Algorithms', 'greedy-algorithms', 2), ('Graphs', 'graphs', 3)) as t(name, slug, pos)
+  where s.name = 'Programming and Data Structures';
+
 -- ---------- users ----------
 insert into auth.users (id, email, raw_user_meta_data) values
  ('00000000-0000-0000-0000-00000000000a','admin@v4.test','{"full_name":"Admin"}'),
@@ -27,7 +36,7 @@ do $$ begin assert (select count(*) from public.profiles)=4, 'profiles via trigg
 set role authenticated; select public.t_as('00000000-0000-0000-0000-00000000000f');
 begin;
 insert into public.courses (id, exam_id, slug, title, status)
-  select '11111111-0000-0000-0000-000000000001', id, 'algorithms-gate-cs', 'Algorithms for GATE CS', 'published' from public.exams where code='GATE_CS';
+  select '11111111-0000-0000-0000-000000000001', id, 'algorithms-course', 'Algorithms course', 'published' from public.exams where code='TST';
 insert into public.course_subjects (id, course_id, title) values ('11111111-0000-0000-0000-000000000002','11111111-0000-0000-0000-000000000001','Algorithms');
 insert into public.course_modules (id, subject_id, title) values ('11111111-0000-0000-0000-000000000003','11111111-0000-0000-0000-000000000002','Graphs');
 insert into public.course_chapters (id, module_id, title) values ('11111111-0000-0000-0000-000000000004','11111111-0000-0000-0000-000000000003','Shortest Paths');
@@ -36,9 +45,9 @@ insert into public.lectures (id, chapter_id, title, status, position, duration_s
  ('22222222-0000-0000-0000-000000000002','11111111-0000-0000-0000-000000000004','Dijkstra','published',2,1000,'ready','22222222-0000-0000-0000-000000000002/v.mp4');
 -- MCQ
 insert into public.questions (id, exam_id, topic_id, type, stem, marks, negative_marks, status, is_pyq, pyq_year, pyq_paper)
-  select '33333333-0000-0000-0000-000000000001', e.id, t.id, 'mcq', 'Dijkstra complexity with binary heap?', 1, 0.33, 'published', true, 2023, 'GATE CS 2023'
+  select '33333333-0000-0000-0000-000000000001', e.id, t.id, 'mcq', 'Dijkstra complexity with binary heap?', 1, 0.33, 'published', true, 2023, 'Sample paper 2023'
   from public.exams e join public.syllabus_sections s on s.exam_id=e.id join public.topics t on t.section_id=s.id
-  where e.code='GATE_CS' and t.slug='shortest-paths';
+  where e.code='TST' and t.slug='shortest-paths';
 insert into public.question_options (id, question_id, label, content) values
  ('44444444-0000-0000-0000-00000000000a','33333333-0000-0000-0000-000000000001','A','O(V^2)'),
  ('44444444-0000-0000-0000-00000000000b','33333333-0000-0000-0000-000000000001','B','O((V+E) log V)');
@@ -48,7 +57,7 @@ insert into public.question_keys (question_id, correct_option_ids, explanation) 
 insert into public.questions (id, exam_id, topic_id, type, stem, marks, status)
   select '33333333-0000-0000-0000-000000000002', e.id, t.id, 'msq', 'Which are greedy?', 2, 'published'
   from public.exams e join public.syllabus_sections s on s.exam_id=e.id join public.topics t on t.section_id=s.id
-  where e.code='GATE_CS' and t.slug='greedy-algorithms';
+  where e.code='TST' and t.slug='greedy-algorithms';
 insert into public.question_options (id, question_id, label, content) values
  ('44444444-0000-0000-0000-0000000000c1','33333333-0000-0000-0000-000000000002','A','Prim'),
  ('44444444-0000-0000-0000-0000000000c2','33333333-0000-0000-0000-000000000002','B','Kruskal'),
@@ -59,11 +68,11 @@ insert into public.question_keys (question_id, correct_option_ids) values
 insert into public.questions (id, exam_id, topic_id, type, stem, marks, status)
   select '33333333-0000-0000-0000-000000000003', e.id, t.id, 'nat', 'Edges in K5?', 2, 'published'
   from public.exams e join public.syllabus_sections s on s.exam_id=e.id join public.topics t on t.section_id=s.id
-  where e.code='GATE_CS' and t.slug='graphs' and s.name='Programming and Data Structures';
+  where e.code='TST' and t.slug='graphs';
 insert into public.question_keys (question_id, nat_min, nat_max) values ('33333333-0000-0000-0000-000000000003', 10, 10);
 -- Test
 insert into public.tests (id, exam_id, slug, title, duration_minutes, status, max_attempts)
-  select '55555555-0000-0000-0000-000000000001', id, 'gate-mock-1', 'GATE Mock 1', 180, 'published', 2 from public.exams where code='GATE_CS';
+  select '55555555-0000-0000-0000-000000000001', id, 'mock-1', 'Mock 1', 180, 'published', 2 from public.exams where code='TST';
 insert into public.test_sections (id, test_id, name) values ('55555555-0000-0000-0000-0000000000a1','55555555-0000-0000-0000-000000000001','Computer Science');
 insert into public.test_questions (test_id, section_id, question_id, position)
   select '55555555-0000-0000-0000-000000000001','55555555-0000-0000-0000-0000000000a1', id, row_number() over (order by id) from public.questions;
@@ -89,12 +98,12 @@ reset role;
 set role authenticated; select public.t_as('00000000-0000-0000-0000-00000000000a');
 insert into public.products (id, type, course_id, price_paise, validity_days) values
   ('66666666-0000-0000-0000-000000000001','course','11111111-0000-0000-0000-000000000001', 49900, 365);
-insert into public.coupons (code, discount_type, discount_value, max_discount_paise, max_redemptions) values ('gate50','percent',50,20000,10);
+insert into public.coupons (code, discount_type, discount_value, max_discount_paise, max_redemptions) values ('cat50','percent',50,20000,10);
 update public.products set price_paise = 59900, sale_price_paise = 49900 where id='66666666-0000-0000-0000-000000000001';
 update public.lectures set is_free_preview = true where id='22222222-0000-0000-0000-000000000001';  -- admin marks first video free
 select public.t_expect_error($q$ update public.profiles set role='student' where id='00000000-0000-0000-0000-00000000000a' $q$, 'last admin');
 reset role;
-do $$ begin assert exists(select 1 from public.coupons where code='GATE50'), 'coupon upper';
+do $$ begin assert exists(select 1 from public.coupons where code='CAT50'), 'coupon upper';
             assert exists(select 1 from public.audit_log where action='free_flag.change'), 'free flag audit'; 
             assert exists(select 1 from public.audit_log where action='product.pricing'), 'price audit'; end $$;
 
@@ -113,13 +122,13 @@ select public.t_expect_error($q$ update public.profiles set role='admin' where i
 select public.t_expect_error($q$ select public.start_test_attempt('55555555-0000-0000-0000-000000000001') $q$, 'do not have access');
 select public.t_expect_error($q$ select public.save_lecture_progress('22222222-0000-0000-0000-000000000002', 10, 10) $q$, 'do not have access');
 select public.save_lecture_progress('22222222-0000-0000-0000-000000000001', 30, 30);  -- free preview ok
-select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='GATE_CS')) $q$, 'after you buy');
+select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='TST')) $q$, 'after you buy');
 select public.t_expect_error($q$ select public.mark_order_paid(gen_random_uuid()) $q$, 'permission denied');
 select public.t_expect_error($q$ insert into public.enrollments (user_id, product_id) values (auth.uid(),'66666666-0000-0000-0000-000000000001') $q$, 'row-level security');
 select public.t_expect_error($q$ insert into public.orders (user_id, product_id, list_price_paise, amount_paise) values (auth.uid(),'66666666-0000-0000-0000-000000000001',0,0) $q$, 'row-level security');
-do $$ declare j jsonb := public.preview_price('66666666-0000-0000-0000-000000000001','Gate50');
+do $$ declare j jsonb := public.preview_price('66666666-0000-0000-0000-000000000001','Cat50');
 begin assert (j->>'amount_paise')::int = 29900, 'coupon math: '||j; end $$;
-select public.create_order('66666666-0000-0000-0000-000000000001','GATE50') as order_json \gset
+select public.create_order('66666666-0000-0000-0000-000000000001','CAT50') as order_json \gset
 reset role;
 
 -- ---------- server confirms payment ----------
@@ -175,7 +184,7 @@ select public.t_expect_error($q$ select public.start_test_attempt('55555555-0000
 do $$ begin assert (select count(*) from public.get_test_leaderboard('55555555-0000-0000-0000-000000000001'))=1, 'leaderboard first attempts only'; end $$;
 
 -- practice
-select public.start_practice_session((select id from public.exams where code='GATE_CS'), null, null, '{mcq}') as ps \gset
+select public.start_practice_session((select id from public.exams where code='TST'), null, null, '{mcq}') as ps \gset
 select set_config('t.ps', :'ps', false);
 do $$ declare s jsonb; r jsonb; begin
   s := public.get_practice_session(current_setting('t.ps')::uuid);
@@ -212,14 +221,14 @@ do $$ begin
   assert (select count(*) from public.test_attempts)=0, 's2 sees others attempts';
 end $$;
 select public.t_expect_error($q$ select public.admin_daily_activity() $q$, 'Admins only');
-select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='GATE_CS')) $q$, 'after you buy');
+select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='TST')) $q$, 'after you buy');
 reset role;
 -- admin marks one question as free practice -> non-buyers get only that one
 set role authenticated; select public.t_as('00000000-0000-0000-0000-00000000000a');
 update public.questions set is_free_practice = true where id='33333333-0000-0000-0000-000000000003';
 reset role;
 set role authenticated; select public.t_as('00000000-0000-0000-0000-000000000002');
-do $$ declare sid uuid := public.start_practice_session((select id from public.exams where code='GATE_CS'), p_count => 50);
+do $$ declare sid uuid := public.start_practice_session((select id from public.exams where code='TST'), p_count => 50);
 begin
   assert (select question_ids from public.practice_sessions where id = sid) = '{33333333-0000-0000-0000-000000000003}', 'only free practice question';
   assert (public.answer_practice_question(sid, '33333333-0000-0000-0000-000000000003', null, 10) ->> 'is_correct')::boolean, 'free practice answer';

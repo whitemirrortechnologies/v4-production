@@ -173,7 +173,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
               </div>
             </Card>
           ))}
-          <Card className="border-dashed p-4"><AddRow action={addNode} fields={{ table: "course_subjects", parent_id: id, course_id: id }} placeholder="Add a subject (e.g. Algorithms)…" label="Add subject" /></Card>
+          <Card className="border-dashed p-4"><AddRow action={addNode} fields={{ table: "course_subjects", parent_id: id, course_id: id }} placeholder="Add a subject (e.g. Quantitative Aptitude)…" label="Add subject" /></Card>
           <p className="text-xs text-ink-3">Click any title to rename it. Changes save when you press Enter or click away.</p>
         </div>
       )}

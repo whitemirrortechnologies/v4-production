@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: env.siteName },
   twitter: { card: "summary_large_image" },
   title: { default: `${env.siteName} — Learn. Practice. Test.`, template: `%s · ${env.siteName}` },
-  description: "Courses, topic-wise practice and full-length mock tests for GATE CS/IT and CAT.",
+  description: "Courses, topic-wise practice and full-length mock tests for CAT: VARC, DILR and Quant.",
 };
 export const viewport: Viewport = {
   width: "device-width",

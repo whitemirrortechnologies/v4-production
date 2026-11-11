@@ -101,7 +101,7 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
         <details className="relative">
           <summary className="flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-dashed border-line-strong px-4 py-2 text-sm font-semibold text-ink-3 hover:bg-wash"><IconPlus size={14} />New exam</summary>
           <ActionForm action={addExam} resetOnSuccess className="absolute left-0 z-20 mt-2 w-80 space-y-3 rounded-2xl border border-line bg-paper p-5 shadow-lift">
-            <label className="block"><Label hint="e.g. GATE_DA">Code</Label><Input name="code" required /></label>
+            <label className="block"><Label hint="e.g. XAT">Code</Label><Input name="code" required /></label>
             <label className="block"><Label>Name</Label><Input name="name" required /></label>
             <label className="block"><Label>Description</Label><Input name="description" /></label>
             <Submit size="sm">Add exam</Submit>
@@ -150,7 +150,7 @@ export default async function SyllabusPage({ searchParams }: { searchParams: Pro
           <Card className="mt-5 border-dashed p-4">
             <ActionForm action={addSection} resetOnSuccess className="flex gap-2">
               <input type="hidden" name="exam_id" value={exam.id} />
-              <Input name="name" placeholder="New section (e.g. Algorithms, VARC)…" required className="h-10" />
+              <Input name="name" placeholder="New section (e.g. VARC, DILR, QA)…" required className="h-10" />
               <Submit size="sm" className="h-10">Add section</Submit>
             </ActionForm>
           </Card>

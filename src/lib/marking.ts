@@ -1,11 +1,10 @@
 import type { QuestionType } from "@/lib/types";
 
-/** Official default marking: GATE MCQ −1/3 or −2/3, CAT MCQ +3/−1, MSQ/NAT/TITA no negatives. */
+/** Default marking. CAT: MCQ +3/−1, TITA +3/0. Other exams: +marks, −1/3 for a wrong MCQ. */
 export function defaultMarking(examCode: string, type: QuestionType, marks?: number) {
-  const cat = examCode.toUpperCase().startsWith("CAT");
-  if (cat) return { marks: 3, negative: type === "mcq" ? 1 : 0 };
-  const m = marks === 2 ? 2 : 1;
-  return { marks: m, negative: type === "mcq" ? (m === 2 ? 0.67 : 0.33) : 0 };
+  if (examCode.toUpperCase().startsWith("CAT")) return { marks: 3, negative: type === "mcq" ? 1 : 0 };
+  const m = marks && marks > 0 ? marks : 1;
+  return { marks: m, negative: type === "mcq" ? Math.round((m / 3) * 100) / 100 : 0 };
 }
 
 export const TYPE_LABEL: Record<QuestionType, string> = {

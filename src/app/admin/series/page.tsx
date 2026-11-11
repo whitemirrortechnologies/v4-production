@@ -20,7 +20,7 @@ export default async function SeriesAdmin() {
       <div className="mt-3"><PageHeader title="Test series" subtitle="Bundles of tests sold on their own. Add tests to a series from each test's Access tab." /></div>
       <Card className="mb-8 p-5">
         <ActionForm action={createSeries} className="grid gap-4 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
-          <label className="block"><Label>New series title</Label><Input name="title" placeholder="GATE CS 2027 Mock Series" required /></label>
+          <label className="block"><Label>New series title</Label><Input name="title" placeholder="CAT 2027 Mock Series" required /></label>
           <label className="block"><Label>Exam</Label><Select name="exam_id">{(exams ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select></label>
           <Submit>Create</Submit>
         </ActionForm>

@@ -36,7 +36,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
     <main id="main" className="mx-auto max-w-[90rem] px-4 py-16 sm:px-10">
       <Eyebrow>Courses</Eyebrow>
       <h1 className="h1 mt-3">{viewer ? "Your courses and more" : "Find your next course"}</h1>
-      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">{viewer ? "Continue what you've started, or add another course to your preparation." : "Structured courses for GATE and CAT. Search, filter and start with a free preview lecture."}</p>
+      <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-2">{viewer ? "Continue what you've started, or add another course to your preparation." : "Structured CAT courses for VARC, DILR and Quant. Search, filter and start with a free preview lecture."}</p>
 
       {owned.length > 0 && (
         <section className="mt-12">

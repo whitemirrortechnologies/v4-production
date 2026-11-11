@@ -31,8 +31,9 @@ export const getCourses = cache(async (examCode?: string): Promise<CatalogCourse
   const supabase = await createClient();
   let q = supabase
     .from("courses")
-    .select("*, exam:exams!inner(code, name)")
+    .select("*, exam:exams!inner(code, name, is_active)")
     .eq("status", "published")
+    .eq("exam.is_active", true)
     .order("published_at", { ascending: false });
   if (examCode) q = q.eq("exam.code", examCode);
   const { data } = await q;
@@ -43,9 +44,10 @@ export const getCourseBySlug = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("courses")
-    .select("*, exam:exams!inner(code, name)")
+    .select("*, exam:exams!inner(code, name, is_active)")
     .eq("slug", slug)
     .eq("status", "published")
+    .eq("exam.is_active", true)
     .maybeSingle();
   if (!data) return null;
   return (await decorate([data as never]))[0];

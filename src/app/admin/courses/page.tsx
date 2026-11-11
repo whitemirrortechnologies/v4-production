@@ -22,7 +22,7 @@ export default async function AdminCourses() {
 
       <Card className="mb-8 p-5">
         <ActionForm action={createCourse} className="grid gap-4 sm:grid-cols-[1fr_14rem_auto] sm:items-end">
-          <label className="block"><Label>New course title</Label><Input name="title" placeholder="Algorithms for GATE CS" required /></label>
+          <label className="block"><Label>New course title</Label><Input name="title" placeholder="Quant: Arithmetic Core" required /></label>
           <label className="block"><Label>Exam</Label>
             <Select name="exam_id" required>{(exams ?? []).map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}</Select>
           </label>

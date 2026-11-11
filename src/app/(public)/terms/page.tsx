@@ -3,7 +3,7 @@ export const metadata = { title: "Terms of Service" };
 export default function Terms() {
   return (
     <Legal title="Terms of Service" updated="[date]">
-      <p>These terms govern your use of the [Business legal name] (&ldquo;we&rdquo;) website and services for GATE and CAT preparation. By creating an account or making a purchase you agree to them.</p>
+      <p>These terms govern your use of the [Business legal name] (&ldquo;we&rdquo;) website and services for CAT preparation. By creating an account or making a purchase you agree to them.</p>
       <h2>1. Accounts</h2><p>You must give accurate details and keep your password private. One account is for one person; sharing access or content is not allowed and may lead to suspension without refund.</p>
       <h2>2. Courses, tests and access</h2><p>A purchase gives you a personal, non-transferable right to use the course or test series for the access period shown at checkout. Content stays our property (or our licensors&rsquo;). You may not record, download, copy or redistribute videos, questions or solutions.</p>
       <h2>3. Payments</h2><p>Prices are in Indian Rupees and include applicable taxes unless stated. Payments are processed by [payment provider]. Coupons are subject to their own conditions.</p>

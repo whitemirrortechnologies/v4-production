@@ -13,7 +13,7 @@ export function CourseCard({ course, enrolled, progress }: { course: CatalogCour
       className="lift group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper hover:border-line-strong">
       <CourseArt title={course.title} slug={course.slug} tag={tag} className="aspect-[16/9]" />
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-xs font-semibold text-ink-3">{tag} <span className="px-1">·</span> {course.exam.name}</p>
+        <p className="text-xs font-semibold text-ink-3">{course.exam.name === tag ? course.exam.name : <>{tag} <span className="px-1">·</span> {course.exam.name}</>}</p>
         <h3 className="mt-2 text-lg font-bold leading-snug tracking-tight">{course.title}</h3>
         {course.subtitle && <p className="mt-1 line-clamp-2 text-sm text-ink-3">{course.subtitle}</p>}
         <p className="mt-4 flex items-center gap-4 text-xs text-ink-3">

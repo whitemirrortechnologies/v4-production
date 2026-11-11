@@ -25,7 +25,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
         <div className="relative p-10 pb-16">
           <p className="eyebrow eyebrow-night">{env.siteName}</p>
           <p className="display mt-5" style={{ fontSize: "clamp(3rem, 2rem + 3vw, 5rem)" }}>Learn.<br />Practice.<br />Test.<br /><span className="text-violet-300">Improve.</span></p>
-          <p className="mt-6 max-w-sm leading-relaxed text-night-ink">One preparation system for GATE and CAT: your courses, practice, tests and progress in one place.</p>
+          <p className="mt-6 max-w-sm leading-relaxed text-night-ink">One preparation system for CAT: your courses, practice, mocks and progress in one place.</p>
         </div>
       </section>
       <section className="flex items-center justify-center px-5 py-12">

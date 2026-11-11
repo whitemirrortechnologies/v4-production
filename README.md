@@ -1,4 +1,4 @@
-# V4 — GATE CS/IT & CAT learning platform
+# V4 — CAT preparation platform
 
 Next.js 16 (App Router) · TypeScript · Tailwind v4 · Supabase (Postgres, Auth, Storage).
 
@@ -37,8 +37,10 @@ npm run dev
 | Accounts: sign up, log in, forgot/reset password, settings, purchases list | ✅ |
 | Public: home, exams, courses (search/filters), course detail, legal + contact pages, sitemap | ✅ |
 | Admin: overview, syllabus, courses + curriculum, video + notes upload, pricing, users, orders | ✅ |
-| Admin: question bank (MCQ/MSQ/NAT/TITA, LaTeX, PYQs, passages), tests builder, test series | ✅ |
+| Admin: question bank (MCQ/TITA and more, LaTeX, PYQs, RC/DILR passages), tests builder, test series | ✅ |
 | Student: dashboard, video player with resume, practice with solutions, exam screen, results | ✅ |
 | Demo checkout with coupons | ✅ (Razorpay later) |
+
+**Existing database with GATE data?** Run [supabase/manual/remove-gate.sql](supabase/manual/remove-gate.sql) once to hide it.
 
 **Before launch:** see [docs/LAUNCH_TODO.md](docs/LAUNCH_TODO.md).

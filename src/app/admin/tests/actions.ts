@@ -23,12 +23,12 @@ export async function createTest(f: FormData): Promise<Result> {
   const examId = str(f, "exam_id");
   const { data: exam } = await supabase.from("exams").select("code").eq("id", examId).single();
   const cat = exam?.code.startsWith("CAT");
-  const duration = Number(str(f, "duration_minutes")) || (cat ? 120 : 180);
+  const duration = Number(str(f, "duration_minutes")) || 120;
   const { data, error } = await supabase.from("tests").insert({ title, slug, exam_id: examId, kind, duration_minutes: duration, created_by: user.id }).select("id").single();
   if (error) return E(error);
   // Sensible starting sections that mirror the real exam.
   const sections = kind === "full_mock"
-    ? (cat ? [["VARC", 40], ["DILR", 40], ["QA", 40]] : [["General Aptitude", null], ["Computer Science", null]])
+    ? (cat ? [["VARC", 40], ["DILR", 40], ["QA", 40]] : [["Section 1", null]])
     : [["Section 1", null]];
   await supabase.from("test_sections").insert(sections.map(([name, d], i) => ({ test_id: data.id, name, position: i + 1, duration_minutes: d })));
   refresh("/admin/tests");

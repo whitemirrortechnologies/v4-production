@@ -171,7 +171,7 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
           {isPyq && (
             <div className="mt-4 grid gap-4 sm:grid-cols-[8rem_1fr]">
               <label className="block"><Label>Year</Label><Input type="number" min={1990} max={2100} value={year} onChange={(e) => setYear(e.target.value)} placeholder="2024" /></label>
-              <label className="block"><Label hint="optional">Paper</Label><Input value={paper} onChange={(e) => setPaper(e.target.value)} placeholder={exam?.code.startsWith("CAT") ? "CAT 2024 Slot 2" : "GATE CS 2024 Set 1"} /></label>
+              <label className="block"><Label hint="optional">Paper</Label><Input value={paper} onChange={(e) => setPaper(e.target.value)} placeholder={exam?.code.startsWith("CAT") ? "CAT 2024 Slot 2" : "Paper name and year"} /></label>
             </div>
           )}
           {isAdmin && (
