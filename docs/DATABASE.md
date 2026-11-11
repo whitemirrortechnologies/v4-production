@@ -1,4 +1,4 @@
-# V4 — Database design (Supabase Postgres) — DRAFT v1
+# V4 — Database design (Supabase Postgres) — DRAFT v2
 
 Everything lives in **one Supabase project**: Postgres tables, Auth users and Storage files
 (including lecture videos for now). Each lecture records `video_provider`, so videos can move to
@@ -11,6 +11,16 @@ Conventions:
 - `position int` = display order among siblings (drag-to-reorder in admin).
 - **RLS is on for every table.** Column notes like 🔒 mean students can never read that data.
 
+Decisions reflected here:
+- **Faculty** have full content control: create, edit and **publish** courses, lectures, questions
+  and tests. **Only admins** manage prices (products, coupons), users and roles, orders and
+  enrollments.
+- **Test attempts:** the admin sets `max_attempts` per test (null = unlimited). Rank and percentile
+  always use each student's first attempt.
+- **Validity:** set per product, either a number of days or a fixed end date (e.g. after GATE 2027),
+  or lifetime.
+- **Included from day one:** coupons, bundles, lecture doubts/Q&A, question error reports.
+
 ---
 
 ## 0. Enums
@@ -22,7 +32,11 @@ Conventions:
 | `difficulty` | `easy`, `medium`, `hard` |
 | `question_type` | `mcq` (single correct), `msq` (multiple correct), `nat` (numerical range), `tita` (CAT type-in) |
 | `video_status` | `none`, `uploading`, `ready`, `failed` |
-| `product_type` | `course`, `test_series` |
+| `product_type` | `course`, `test_series`, `bundle` |
+| `discount_type` | `percent`, `fixed` |
+| `doubt_status` | `open`, `answered`, `closed` |
+| `report_reason` | `wrong_answer`, `wrong_question`, `typo`, `unclear_solution`, `other` |
+| `report_status` | `open`, `accepted`, `rejected` |
 | `order_status` | `pending`, `paid`, `failed`, `refunded` |
 | `test_kind` | `full_mock`, `sectional`, `topic_test`, `pyq_paper` |
 | `attempt_status` | `in_progress`, `submitted`, `expired` |
@@ -124,7 +138,8 @@ Seeded with the official GATE CS/IT and CAT syllabi.
 
 ## 4. Products, orders, enrollments
 
-One `product` = one thing a student can buy: a course **or** a test series.
+One `product` = one thing a student can buy: a course, a test series, **or a bundle** of
+other products.
 Courses can also bundle tests (`course_tests`), so buying the course unlocks them too.
 
 ### `test_series`
@@ -148,18 +163,59 @@ Courses can also bundle tests (`course_tests`), so buying the course unlocks the
 | type | product_type | |
 | course_id | uuid → courses null | set when type = course |
 | test_series_id | uuid → test_series null | set when type = test_series |
+| slug, title, description, thumbnail_path | text null | used by bundles (courses/series use their own) |
 | price_paise | int | 0 = free |
 | sale_price_paise | int null | optional discounted price |
-| validity_days | int null | null = lifetime access |
+| validity_days | int null | access lasts N days from purchase |
+| access_until | date null | access ends on a fixed date (e.g. after the exam) |
 | is_active | bool | |
-| | | CHECK: exactly one of course_id / test_series_id matches `type` |
+| | | CHECK: course_id / test_series_id set according to `type` (both null for bundles) |
+| | | Expiry = the earlier of (purchase + validity_days) and access_until. Both null = lifetime |
+
+### `bundle_items`
+| Column | Type | Notes |
+|---|---|---|
+| bundle_product_id | uuid → products | must be type `bundle` |
+| item_product_id | uuid → products | a course or test-series product (no bundles inside bundles) |
+| position | int | |
+| | | PK (bundle_product_id, item_product_id) |
+
+### `coupons` (admin only)
+| Column | Type | Notes |
+|---|---|---|
+| code | citext unique | e.g. `GATE50`, case-insensitive |
+| description | text | internal note |
+| discount_type | discount_type | |
+| discount_value | int | percent (1–100) or paise |
+| max_discount_paise | int null | cap for percentage coupons |
+| min_order_paise | int null | |
+| valid_from, valid_until | timestamptz null | |
+| max_redemptions | int null | total uses allowed |
+| max_per_user | int | default 1 |
+| applies_to_all | bool | false = only the products in `coupon_products` |
+| is_active | bool | |
+
+### `coupon_products`
+| coupon_id → coupons | product_id → products | PK (coupon_id, product_id) |
+|---|---|---|
+
+### `coupon_redemptions`
+| Column | Type | Notes |
+|---|---|---|
+| coupon_id | uuid → coupons | |
+| user_id | uuid → profiles | |
+| order_id | uuid → orders unique | recorded only when the order is **paid** |
+| discount_paise | int | |
 
 ### `orders`
 | Column | Type | Notes |
 |---|---|---|
 | user_id | uuid → profiles | |
 | product_id | uuid → products | |
-| amount_paise | int | price charged at the time of purchase (not looked up live) |
+| list_price_paise | int | price at checkout time |
+| coupon_id | uuid → coupons null | |
+| discount_paise | int | default 0 |
+| amount_paise | int | what was actually charged = list − discount (fixed at checkout) |
 | currency | text | `INR` |
 | status | order_status | |
 | provider | text | `demo` now, `razorpay` later |
@@ -178,8 +234,8 @@ Courses can also bundle tests (`course_tests`), so buying the course unlocks the
 | | | UNIQUE (user_id, product_id) |
 
 Helper SQL functions used by RLS and the app: `has_course_access(user, course)` and
-`has_test_access(user, test)`. The second checks the test is free, in a purchased series, or in a
-purchased course.
+`has_test_access(user, test)`. They count direct purchases **and bundles**. A test is accessible if
+it's free, in a purchased series, or in a purchased course.
 
 ---
 
@@ -249,7 +305,7 @@ after submitting a test.
 | instructions | text | Markdown, shown before starting |
 | duration_minutes | int | overall time (GATE 180, CAT 120) |
 | is_free | bool | free tests need no purchase |
-| max_attempts | int null | null = unlimited |
+| max_attempts | int null | set by admin per test. null = unlimited |
 | available_from, available_until | timestamptz null | for scheduled "live" mocks |
 | status | content_status | |
 | created_by | uuid → profiles | |
@@ -332,6 +388,19 @@ attempts past their `deadline_at`, even if the student closed the tab.
 | time_taken_seconds | int | |
 | answered_at | timestamptz | |
 
+### `question_reports`: "Report an error" from students
+| Column | Type | Notes |
+|---|---|---|
+| question_id | uuid → questions | |
+| user_id | uuid → profiles | |
+| reason | report_reason | |
+| message | text null | |
+| test_attempt_id / practice_session_id | uuid null | where it was reported from |
+| status | report_status | admin/faculty review queue |
+| resolved_by | uuid → profiles null | |
+| resolved_at | timestamptz null | |
+| resolution_note | text null | shown back to the student |
+
 ---
 
 ## 8. Learning progress
@@ -346,6 +415,26 @@ attempts past their `deadline_at`, even if the student closed the tab.
 | completed_at | timestamptz null | set at ≥ 90 % watched |
 | updated_at | timestamptz | also used for "continue watching" and activity stats |
 | | | PK (user_id, lecture_id) |
+
+### `lecture_doubts`: student questions under a lecture
+| Column | Type | Notes |
+|---|---|---|
+| lecture_id | uuid → lectures | |
+| user_id | uuid → profiles | asker |
+| body | text | Markdown + KaTeX |
+| video_timestamp_seconds | int null | "at 12:34 in the video" |
+| status | doubt_status | |
+| is_pinned | bool | faculty can pin useful ones |
+
+Visible to students enrolled in the course (shared, like a class forum).
+
+### `doubt_replies`
+| Column | Type | Notes |
+|---|---|---|
+| doubt_id | uuid → lecture_doubts | |
+| user_id | uuid → profiles | |
+| body | text | |
+| is_staff_answer | bool | set automatically when faculty/admin reply, and marks the doubt `answered` |
 
 ---
 
@@ -400,7 +489,9 @@ exams ─┬─ syllabus_sections ── topics ◄─────────�
        │                                    │              └─ question_groups
        └─ products (course | test_series) ── orders ── enrollments ◄── profiles
                                                                        │
+       products ── bundle_items · coupons ── coupon_products · coupon_redemptions
      profiles ── lecture_progress · practice_sessions/answers · test_attempts/responses · bookmarks
+     lectures ── lecture_doubts ── doubt_replies          questions ── question_reports
 ```
 
-**Total: 30 tables + 5 views.**
+**Total: 37 tables + 5 views.**
