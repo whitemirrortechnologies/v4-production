@@ -3,6 +3,7 @@ import { AuthForm } from "@/components/auth-form";
 import { SetupNotice } from "@/components/setup-notice";
 import { Logo } from "@/components/logo";
 import { Notice } from "@/components/ui";
+import { Credit } from "@/components/credit";
 import { isSupabaseConfigured, env } from "@/lib/env";
 import { signIn } from "../actions";
 
@@ -32,6 +33,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
           {error === "blocked" && <div className="mb-4"><Notice tone="error">This account has been suspended.</Notice></div>}
           {error === "link" && <div className="mb-4"><Notice tone="error">That link is invalid or has expired. Try again.</Notice></div>}
           <AuthForm mode="login" action={signIn} next={safe} />
+          <Credit className="mt-12" />
         </div>
       </section>
     </main>

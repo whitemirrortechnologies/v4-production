@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import { getViewer } from "@/lib/auth";
 import { HeaderClient } from "@/components/header-client";
 import { Logo } from "@/components/logo";
+import { Credit } from "@/components/credit";
 
 export async function SiteHeader() {
   const viewer = await getViewer().catch(() => null);
@@ -36,6 +37,7 @@ export function SiteFooter() {
       <div className="border-t border-night-line">
         <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-3 px-4 py-5 text-xs text-night-ink-2 sm:px-10">
           <p>© {new Date().getFullYear()} {env.siteName}. All rights reserved.</p>
+          <Credit dark className="order-last w-full sm:order-none sm:w-auto" />
           <nav aria-label="Legal" className="flex flex-wrap gap-5">
             <Link className="hover:text-white" href="/terms">Terms</Link><Link className="hover:text-white" href="/privacy">Privacy</Link>
             <Link className="hover:text-white" href="/refund-policy">Refunds</Link><Link className="hover:text-white" href="/contact">Contact</Link>

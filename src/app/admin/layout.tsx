@@ -3,6 +3,7 @@ import { requireStaff } from "@/lib/auth";
 import { env } from "@/lib/env";
 import { Logo } from "@/components/logo";
 import { AdminNav } from "@/components/admin-nav";
+import { Credit } from "@/components/credit";
 
 const links = [
   { href: "/admin", label: "Overview", icon: "overview" as const },
@@ -30,7 +31,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/app" className="mt-1 block text-xs text-night-ink hover:text-white">Switch to student view →</Link>
         </div>
       </aside>
-      <div className="min-w-0 px-4 py-8 sm:px-8 lg:px-12 lg:py-10">{children}</div>
+      <div className="flex min-w-0 flex-col px-4 py-8 sm:px-8 lg:px-12 lg:py-10">
+        <div className="flex-1">{children}</div>
+        <Credit className="mt-16 border-t border-line pt-6" />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { btn } from "@/components/ui";
+import { Credit } from "@/components/credit";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => { console.error(error); }, [error]);
@@ -16,6 +17,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
           <button onClick={reset} className={btn({ size: "lg" })}>Try again</button>
           <Link href="/" className={btn({ variant: "outline", size: "lg" })}>Go home</Link>
         </div>
+        <Credit className="mt-16" />
       </div>
     </main>
   );

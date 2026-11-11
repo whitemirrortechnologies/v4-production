@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { btn } from "@/components/ui";
+import { Credit } from "@/components/credit";
 
 export default function NotFound() {
   return (
@@ -14,6 +15,7 @@ export default function NotFound() {
           <Link href="/courses" className={btn({ variant: "outlineDark", size: "lg" })}>Browse courses</Link>
         </div>
       </div>
+      <Credit dark className="absolute inset-x-0 bottom-6" />
     </main>
   );
 }

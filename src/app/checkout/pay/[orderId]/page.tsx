@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
+import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Button, Card, LinkButton, Notice } from "@/components/ui";
 import { rupees } from "@/lib/format";
 import { IconCheck } from "@/components/icons";
@@ -54,6 +54,7 @@ export default async function PayPage({ params, searchParams }: {
           </Card>
         )}
       </main>
+      <SiteFooter />
     </>
   );
 }

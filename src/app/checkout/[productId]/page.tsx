@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { SiteHeader } from "@/components/site-header";
+import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { Button, Card, Input, Label, Notice } from "@/components/ui";
 import { rupees } from "@/lib/format";
 import { startCheckout } from "../actions";
@@ -66,6 +66,7 @@ export default async function Checkout({ params, searchParams }: {
         </Card>
         <p className="mt-6 text-center text-sm"><Link className="text-ink-3 hover:text-ink" href={course ? `/courses/${course.slug}` : "/courses"}>← Back</Link></p>
       </main>
+      <SiteFooter />
     </>
   );
 }

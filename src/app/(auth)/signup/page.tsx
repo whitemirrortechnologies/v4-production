@@ -3,6 +3,7 @@ import { AuthForm } from "@/components/auth-form";
 import { SetupNotice } from "@/components/setup-notice";
 import { Logo } from "@/components/logo";
 import { Notice } from "@/components/ui";
+import { Credit } from "@/components/credit";
 import { isSupabaseConfigured, env } from "@/lib/env";
 import { signUp } from "../actions";
 
@@ -31,6 +32,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
           <p className="mb-8 mt-2 text-ink-3">Start with free lectures, tests and practice.</p>
           {error === "blocked" && <div className="mb-4"><Notice tone="error">This account has been suspended.</Notice></div>}
           <AuthForm mode="signup" action={signUp} next={safe} />
+          <Credit className="mt-12" />
         </div>
       </section>
     </main>

@@ -35,9 +35,10 @@ export default async function Home() {
   return (
     <main id="main">
       {/* ------- Hero ------- */}
-      <section className="on-night relative overflow-hidden bg-night text-white">
+      {/* Hero fills exactly the first screen (below the 64px header) at every window size. */}
+      <section className="on-night relative flex min-h-[calc(100svh-65px)] flex-col overflow-hidden bg-night text-white">
         <div className="grid-bg glow-top absolute inset-0" aria-hidden />
-        <div className="relative mx-auto grid max-w-[90rem] items-center gap-6 px-4 pb-16 pt-16 sm:px-10 lg:grid-cols-[1.05fr_1fr] lg:pb-20 lg:pt-24">
+        <div className="relative mx-auto grid w-full max-w-[90rem] flex-1 items-center gap-6 px-4 py-12 sm:px-10 lg:grid-cols-[1.05fr_1fr] lg:py-16">
           <div>
             <div className="rise"><Eyebrow dark dot>Preparation system for GATE &amp; CAT</Eyebrow></div>
             <h1 className="display rise mt-6 text-white" style={{ animationDelay: "60ms" }}>
@@ -56,7 +57,7 @@ export default async function Home() {
           </div>
           <Tilt className="rise mx-auto w-full max-w-[40rem]"><OrbitGraphic className="w-full" /></Tilt>
         </div>
-        <div className="relative mx-auto max-w-[90rem] px-4 sm:px-10">
+        <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-10">
           <ol className="hide-scrollbar flex gap-6 overflow-x-auto border-t border-night-line py-4 font-mono text-xs text-night-ink-2 sm:gap-8">
             {["Learn", "Practice", "Test", "Analyze", "Improve"].map((s, i) => (
               <li key={s} className="whitespace-nowrap"><span className="mr-2">0{i + 1}</span>{s}</li>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { Credit } from "@/components/credit";
 import { SimpleAuthForm } from "@/components/simple-auth-form";
 import { env } from "@/lib/env";
 import { requestReset } from "../actions";
@@ -15,6 +16,7 @@ export default async function Page() {
         <p className="mb-8 mt-2 text-ink-3">We'll email you a link to set a new one.</p>
         <SimpleAuthForm action={requestReset} kind="forgot" />
         <p className="mt-6 text-center text-sm text-ink-3"><Link href="/login" className="font-semibold text-violet-600 hover:underline">Back to log in</Link></p>
+        <Credit className="mt-12" />
       </div>
     </main>
   );

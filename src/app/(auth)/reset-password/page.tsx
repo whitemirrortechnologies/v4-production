@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
+import { Credit } from "@/components/credit";
 import { SimpleAuthForm } from "@/components/simple-auth-form";
 import { getViewer } from "@/lib/auth";
 import { env } from "@/lib/env";
@@ -18,6 +19,7 @@ export default async function Page() {
         <p className="mb-8 mt-2 text-ink-3">Pick something you haven't used before.</p>
         <SimpleAuthForm action={setNewPassword} kind="reset" />
         <p className="mt-6 text-center text-sm text-ink-3"><Link href="/login" className="font-semibold text-violet-600 hover:underline">Back to log in</Link></p>
+        <Credit className="mt-12" />
       </div>
     </main>
   );
