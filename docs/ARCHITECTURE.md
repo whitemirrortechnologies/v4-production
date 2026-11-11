@@ -1,6 +1,7 @@
 # V4 — Architecture (DRAFT for review)
 
-> Status: proposal. Nothing here is built yet. Items marked **[DECIDE]** need your call.
+> Status: proposal, round 2. Decided so far: start fresh, Next.js + Supabase (Free plan), tests sold
+> both inside courses and as test series. Items marked **[DECIDE]** are still open.
 
 V4 is an exam-prep platform for **GATE (CS/IT)** and **CAT**: students learn (video courses),
 practice (topic-wise questions) and test (full-length mocks). Admins and faculty manage all content
@@ -15,9 +16,9 @@ and can see how it's being used.
 | Web app | **Next.js 15 (App Router) + TypeScript** | One codebase for the public site, the student app and the admin panel. Server components keep secrets and answer keys on the server. |
 | UI | **Tailwind CSS + shadcn/ui**, **KaTeX** for math | Fast, consistent UI. GATE/CAT questions need formulas. |
 | Database / Auth / Files | **Supabase** (Postgres 17, Auth, Storage, Row-Level Security), region **ap-south-1 (Mumbai)** | You already use Supabase. Low latency for Indian students. RLS enforces access control inside the DB itself. |
-| Video **[DECIDE]** | **Bunny Stream** (recommended), or Cloudflare Stream / Mux; Supabase Storage as an MVP fallback | Real video hosting handles transcoding to HLS, adaptive quality, resumable uploads and signed playback URLs. Plain file storage does none of that. |
+| Video **[DECIDE]** | `VideoStorage` adapter: **Supabase Storage** (dev/demo) → **Cloudflare R2** (free, recommended for real use) → Bunny Stream later | Supabase Free can't hold real course video (see §1.1). The adapter lets us swap where files live without touching the rest of the app. |
 | Payments | `PaymentProvider` interface: **DemoProvider** now, **Razorpay** later | Turning on real payments later only means writing one new class, not touching business logic. |
-| Hosting | **Vercel** (app) + Supabase (backend) | No servers to run. Preview deploys for every PR. |
+| Hosting | **Vercel** for development and previews. For the paid launch, Vercel Pro or Cloudflare (Workers via OpenNext) | Vercel's free Hobby plan doesn't allow commercial use, and selling courses is commercial. |
 | Validation | **Zod** shared by forms and server actions | One schema validates both the browser and the server. |
 | Testing | Vitest (scoring/logic), Playwright (end-to-end flows) | The scoring engine must be provably correct. |
 
@@ -34,6 +35,33 @@ and can see how it's being used.
       └───────────────────────────────────────────────┘
  Payment provider (Demo → Razorpay) ── webhook ──► /api/payments/webhook
 ```
+
+### 1.1 Budget constraint: Supabase Free plan
+
+Limits as of Nov 2026 (from Supabase docs):
+
+| Resource | Free limit | What it means for V4 |
+|---|---|---|
+| Database | 500 MB | Plenty. ~100k questions plus all progress data fit easily. |
+| Monthly active users | 50,000 | Plenty. |
+| File storage | **1 GB total** | ≈ 3–6 hours of compressed lecture video. **Not enough for courses.** |
+| Max file size | **50 MB per file** | ≈ 15–20 min of 720p video per lecture, unless split. |
+| Bandwidth | **5 GB uncached + 5 GB cached / month**, shared by DB, auth and storage | ≈ 30–60 student-hours of video watching **per month for everyone combined**. |
+| Inactivity | Projects pause after ~1 week with no activity. No backups. | Fine during development. Needs a plan before launch. |
+| Projects | 2 free projects per org (you're using 1: Amritacanteen) | V4 takes the second slot. |
+
+**Conclusion:** Supabase Free handles everything except video. For video:
+
+| Option | Cost | Storage / bandwidth | Trade-off |
+|---|---|---|---|
+| A. Supabase Storage only | ₹0 | 1 GB / ~10 GB per month | Only good for a demo with a few short clips. |
+| **B. Cloudflare R2 + Supabase (recommended)** | **₹0** within 10 GB storage; **egress is always free** | 10 GB storage (~30–60 h of video), unlimited bandwidth | Needs a free Cloudflare account (card on file). No automatic transcoding, so we serve web-optimised MP4 with seeking (fine for lectures). |
+| C. YouTube unlisted, uploaded from the admin panel | ₹0 | Unlimited | YouTube branding/player, unlisted links can be shared, API upload quota (~6 uploads/day). |
+| D. Bunny Stream | ~$1/month minimum + ~$0.01/GB | Unlimited, with HLS transcoding | Best experience, not free. |
+
+The code goes through one `VideoStorage` interface (`createUpload`, `getPlaybackUrl`, `delete`),
+so the app starts on A or B and can move to D later by adding an adapter and migrating files.
+The upload flow (§4.1) is the same for each: signed URL → direct browser upload with progress.
 
 ---
 
@@ -120,17 +148,22 @@ view, so nothing shown to students is made up.
 
 ## 4. Key flows
 
-### 4.1 Admin video upload (direct to video host, never through our server)
-1. Admin selects a file on the lecture form.
-2. A server action creates the video on Bunny/CF and returns a **short-lived signed TUS upload URL**.
-3. The browser uploads directly with resumable TUS (survives flaky connections, multi-GB files),
-   with a progress bar.
-4. The video host sends a webhook when transcoding finishes → `lecture.video_status = ready`,
-   `duration_s` filled in automatically.
+### 4.1 Admin video upload (direct to storage, never through our server)
+1. Admin selects a file on the lecture form. The browser reads its duration and checks size/type.
+2. A server action checks the admin's role and returns a **short-lived signed upload URL** from the
+   active `VideoStorage` adapter (Supabase: signed upload URL; R2: presigned multipart upload).
+3. The browser uploads directly with a progress bar. Large files go in chunks that can resume.
+4. When the upload finishes, the lecture is marked `video_status = ready` with its duration and size.
+   An admin storage meter shows usage against the free-tier quota.
+
+Encoding guidance shown in the admin UI: MP4 (H.264/AAC), 720p, ~1 Mbps, "fast start", which
+gives roughly 450 MB per hour.
 
 ### 4.2 Watching a lecture
-- The server checks enrollment (or `is_free_preview`) → issues a **signed, expiring HLS URL**.
-- Distraction-free player (hls.js): speed control, quality, keyboard shortcuts, notes PDF.
+- The server checks enrollment (or `is_free_preview`) → issues a **signed, expiring URL**
+  (MP4 now, HLS once we're on a streaming host).
+- Distraction-free player: speed control, keyboard shortcuts, notes PDF, no recommendations or
+  clutter.
 - Position saved every ~10 s and on pause/unload → resumes where the student left off.
 
 ### 4.3 Practice
@@ -233,10 +266,11 @@ Implemented as SQL views / materialized views refreshed by `pg_cron`.
 
 ## 9. Open decisions
 
-1. **Existing `whitemirrortechnologies/v4` repo**: port its code (e.g. the video uploader) or
-   start fresh here?
-2. **Video host**: Bunny Stream / Cloudflare Stream / Mux / Supabase Storage.
-3. **Supabase project**: new dedicated project (recommended) vs. reusing an existing one.
+1. ~~Existing v4 repo~~: **decided**, start fresh.
+2. **Video storage on a ₹0 budget**: A (Supabase only, demo) / **B (Cloudflare R2, recommended)** /
+   C (YouTube unlisted). See §1.1.
+3. ~~Supabase project~~: **decided**, new dedicated free project (second free slot).
 4. **Login methods**: email+password, email OTP, Google, phone OTP?
 5. **Faculty powers**: can faculty publish and set prices, or only author drafts for admin approval?
-6. **Test access**: tests bundled inside courses, sold separately as "test series", or both?
+6. ~~Test access~~: **decided**, both. Courses can bundle tests, and test series are sold on
+   their own. (`product` = course | test_series; enrollments point at products.)
