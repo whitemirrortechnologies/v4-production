@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { delay } from "@/lib/motion";
 import { CourseCard } from "@/components/course-card";
 import { Empty, Eyebrow } from "@/components/ui";
 import { getCourses, getExams } from "@/lib/catalog";
@@ -24,7 +25,7 @@ export default async function ExamPage({ params }: { params: Promise<{ code: str
         <h2 className="h2">Courses</h2>
         <div className="mt-8">
           {courses.length ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.map((c) => <CourseCard key={c.id} course={c} />)}</div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.map((c, i) => <div key={c.id} data-reveal style={delay((i % 3) * 70)}><CourseCard course={c} /></div>)}</div>
           ) : <Empty title="Courses coming soon" />}
         </div>
       </section>

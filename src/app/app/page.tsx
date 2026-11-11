@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { delay } from "@/lib/motion";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
@@ -63,12 +64,12 @@ export default async function Dashboard() {
             </div>
             {latestCourse ? (
               <Link href={`/app/learn/${latestCourse.slug}${latestLecture ? `/${latestLecture.id}` : ""}`}
-                className="group rounded-2xl bg-white p-6 text-ink shadow-lift transition-transform duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5">
+                className="lift group rounded-2xl bg-white p-6 text-ink shadow-lift">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-violet-600">Continue learning</p>
                 <p className="mt-3 font-display text-xl font-bold tracking-tight">{latestCourse.title}</p>
                 {latestLecture && <p className="mt-1 truncate text-sm text-ink-3">Next up: {latestLecture.title}</p>}
                 <div className="mt-5 flex items-center gap-4">
-                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform group-hover:scale-105"><IconPlay size={16} /></span>
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-white transition-transform duration-500 ease-spring group-hover:scale-110"><IconPlay size={16} /></span>
                   <div className="min-w-0 flex-1">
                     <div className="h-1.5 overflow-hidden rounded-full bg-wash"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Number(latest.total_lectures) ? (Number(latest.completed_lectures) / Number(latest.total_lectures)) * 100 : 0}%` }} /></div>
                     <p className="mt-1.5 text-xs text-ink-3">{latest.completed_lectures} of {latest.total_lectures} lectures</p>
@@ -88,7 +89,7 @@ export default async function Dashboard() {
         <section className="mx-auto max-w-[90rem] px-4 pt-10 sm:px-10">
           <div className="grid gap-3 sm:grid-cols-3">
             {[["/courses", "Courses", "Browse every course"], ["/app/practice", "Practice", "Topic-wise questions with solutions"], ["/app/tests", "Tests", "Mocks under real exam conditions"]].map(([href, t, d]) => (
-              <Link key={href} href={href} className="group flex items-center justify-between rounded-2xl border border-line p-5 transition-colors hover:bg-wash">
+              <Link key={href} href={href} className="lift group flex items-center justify-between rounded-2xl border border-line bg-paper p-5">
                 <span><span className="block font-semibold">{t}</span><span className="text-sm text-ink-3">{d}</span></span><Arrow className="text-ink-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
             ))}
@@ -102,14 +103,14 @@ export default async function Dashboard() {
           </div>
           {mine.length ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {mine.map(({ course, expires }) => {
+              {mine.map(({ course, expires }, i) => {
                 const p = progress?.find((x) => x.course_id === course.id);
                 const s = stats?.find((x) => x.course_id === course.id);
                 const total = Number(p?.total_lectures ?? s?.lecture_count ?? 0), doneN = Number(p?.completed_lectures ?? 0);
                 const pct = total ? Math.round((doneN / total) * 100) : 0;
                 return (
-                  <Link key={course.id} href={`/app/learn/${course.slug}${p?.last_lecture_id ? `/${p.last_lecture_id}` : ""}`}
-                    className="group overflow-hidden rounded-2xl border border-line bg-paper transition-[box-shadow,transform] duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:shadow-lift">
+                  <div key={course.id} data-reveal style={delay((i % 3) * 70)}><Link href={`/app/learn/${course.slug}${p?.last_lecture_id ? `/${p.last_lecture_id}` : ""}`}
+                    className="lift group block h-full overflow-hidden rounded-2xl border border-line bg-paper">
                     <CourseArt title={course.title} slug={course.slug} tag={examCode(course.exam_id)} className="aspect-[16/7]" />
                     <div className="p-5">
                       <p className="font-display text-lg font-bold tracking-tight">{course.title}</p>
@@ -120,7 +121,7 @@ export default async function Dashboard() {
                       </div>
                       <p className="mt-5 flex items-center gap-1.5 text-sm font-semibold">{doneN || p ? "Continue" : "Start learning"} <Arrow className="transition-transform group-hover:translate-x-0.5" /></p>
                     </div>
-                  </Link>
+                  </Link></div>
                 );
               })}
             </div>
@@ -136,7 +137,7 @@ export default async function Dashboard() {
         {others.length > 0 && (
           <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-10">
             <h2 className="h2">Explore more</h2>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{others.map((c) => <CourseCard key={c.id} course={c} />)}</div>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{others.map((c, i) => <div key={c.id} data-reveal style={delay(i * 70)}><CourseCard course={c} /></div>)}</div>
           </section>
         )}
       </main>

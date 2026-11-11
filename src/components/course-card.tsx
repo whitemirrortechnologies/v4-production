@@ -10,7 +10,7 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
   const tag = course.exam.code.split("_")[0];
   return (
     <Link href={`/courses/${course.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-paper transition-[box-shadow,transform,border-color] duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift">
+      className="lift group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper hover:border-line-strong">
       <CourseArt title={course.title} slug={course.slug} tag={tag} className="aspect-[16/9]" />
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-semibold text-ink-3">{tag} <span className="px-1">·</span> {course.exam.name}</p>
@@ -26,7 +26,7 @@ export function CourseCard({ course }: { course: CatalogCourse }) {
             {price == null ? "—" : rupees(price)}
             {onSale && <span className="ml-2 text-xs font-normal text-ink-3 line-through">{rupees(course.product!.price_paise)}</span>}
           </p>
-          <span className="flex items-center gap-1.5 text-sm font-semibold">View course <Arrow className="transition-transform group-hover:translate-x-0.5" /></span>
+          <span className="flex items-center gap-1.5 text-sm font-semibold">View course <Arrow className="transition-transform duration-500 ease-spring group-hover:translate-x-1" /></span>
         </div>
       </div>
     </Link>

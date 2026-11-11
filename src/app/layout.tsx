@@ -4,6 +4,7 @@ import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import { env } from "@/lib/env";
 import { Toaster } from "@/components/toaster";
+import { Motion } from "@/components/motion";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Toaster />
+        <Motion />
       </body>
     </html>
   );

@@ -41,7 +41,7 @@ export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: s
           {signedIn ? (
             <details className="relative" onToggle={(e) => setMenu((e.currentTarget as HTMLDetailsElement).open)} open={menu}>
               <summary aria-label="Account menu" className="flex size-9 cursor-pointer items-center justify-center rounded-full bg-white text-sm font-bold text-ink hover:bg-line">{initial}</summary>
-              <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-night-line bg-night-3 py-1.5 text-sm shadow-lift" onClick={() => setMenu(false)}>
+              <div className="pop absolute right-0 mt-2 w-52 origin-top-right overflow-hidden rounded-xl border border-night-line bg-night-3 py-1.5 text-sm shadow-lift" onClick={() => setMenu(false)}>
                 <Link href="/app" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">My learning</Link>
                 <Link href="/app/settings" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">Settings</Link>
                 {staff && <Link href="/admin" className="block px-4 py-2 text-night-ink hover:bg-white/5 hover:text-white">Admin console</Link>}

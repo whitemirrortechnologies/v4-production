@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { delay } from "@/lib/motion";
 import clsx from "clsx";
 import { requireViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +35,7 @@ export default async function TestsHome({ searchParams }: { searchParams: Promis
         </div>
 
         <div className="mt-8 space-y-3">
-          {(tests ?? []).map((t) => {
+          {(tests ?? []).map((t, i) => {
             const mine = (attempts ?? []).filter((a) => a.test_id === t.id);
             const open = mine.find((a) => a.status === "in_progress");
             const last = mine.find((a) => a.status !== "in_progress");
@@ -42,8 +43,8 @@ export default async function TestsHome({ searchParams }: { searchParams: Promis
             const secs = (t.test_sections as { name: string; duration_minutes: number | null }[]) ?? [];
             const timed = secs.length > 0 && secs.every((s) => s.duration_minutes);
             return (
-              <Link key={t.id} href={open ? `/app/tests/attempt/${open.id}` : `/app/tests/${t.id}`}
-                className="cv-auto group flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-paper p-5 transition-[box-shadow,border-color] hover:border-line-strong hover:shadow-soft sm:flex-nowrap">
+              <div key={t.id} data-reveal style={delay(Math.min(i, 6) * 50)}><Link href={open ? `/app/tests/attempt/${open.id}` : `/app/tests/${t.id}`}
+                className="lift group flex flex-wrap items-center gap-5 rounded-2xl border border-line bg-paper p-5 hover:border-line-strong sm:flex-nowrap">
                 <div className="min-w-0 flex-1">
                   <p className="flex flex-wrap items-center gap-2 text-xs font-semibold text-ink-3">
                     <span className="uppercase tracking-[0.12em]">{KIND[t.kind]}</span>
@@ -60,7 +61,7 @@ export default async function TestsHome({ searchParams }: { searchParams: Promis
                 <span className={clsx("flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold", open ? "bg-violet-600 text-white" : ok ? "bg-ink text-white" : "bg-wash text-ink-2")}>
                   {open ? "Resume" : !ok ? "View" : mine.length ? "Retake" : "Start"}<IconChevron size={14} />
                 </span>
-              </Link>
+              </Link></div>
             );
           })}
           {!tests?.length && <Empty title="No tests published for this exam yet" />}

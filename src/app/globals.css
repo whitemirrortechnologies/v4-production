@@ -43,6 +43,10 @@
   --shadow-lift: 0 1px 2px #0505050a, 0 24px 56px -24px #05050573;
   --shadow-glow: 0 0 0 1px #635bff59, 0 12px 40px -12px #635bff73;
   --ease-apple: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Damped-spring curves, simulated (stiffness/damping) and sampled into linear(). */
+  --ease-spring: linear(0, 0.0349, 0.1192, 0.2344, 0.3651, 0.5111, 0.6385, 0.7534, 0.8522, 0.9333, 0.9964, 1.0427, 1.0738, 1.092, 1.0996, 1.0987, 1.0919, 1.0813, 1.0686, 1.0551, 1.042, 1.0298, 1.0191, 1.0102, 1.003, 0.9972, 0.9936, 0.9913, 0.9902, 0.99, 0.9904, 0.9913, 0.9925, 0.9939, 0.9952, 0.9966, 0.9977, 0.9987, 0.9995, 1.0001, 1);
+  --ease-spring-soft: linear(0, 0.0219, 0.0675, 0.1366, 0.2167, 0.2928, 0.3775, 0.4513, 0.5284, 0.5993, 0.6571, 0.7145, 0.7647, 0.8041, 0.8418, 0.8708, 0.898, 0.9206, 0.9374, 0.9528, 0.9651, 0.9741, 0.982, 0.9875, 0.9923, 0.9959, 0.9983, 1.0002, 1.0015, 1.0023, 1.0029, 1.0031, 1.0032, 1.0031, 1.003, 1.0027, 1.0025, 1.0022, 1.002, 1.0017, 1);
+  --ease-spring-snappy: linear(0, 0.0267, 0.0885, 0.1592, 0.2533, 0.3521, 0.4498, 0.5297, 0.6159, 0.6932, 0.7608, 0.8186, 0.8607, 0.9016, 0.9345, 0.9604, 0.9778, 0.9932, 1.0042, 1.0118, 1.016, 1.0188, 1.02, 1.0199, 1.019, 1.0177, 1.0159, 1.014, 1.012, 1.0103, 1.0085, 1.0069, 1.0054, 1.0042, 1.0033, 1.0024, 1.0016, 1.001, 1.0006, 1.0003, 1);
 }
 
 html {
@@ -102,11 +106,26 @@ h1, h2, h3 { font-family: var(--font-display); }
 /* Entrance: opacity + transform only; off for reduced-motion users. */
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .rise { animation: rise 0.6s var(--ease-apple) both; }
-@keyframes orbit { to { transform: rotate(360deg); } }
-.orbit-spin { transform-origin: 50% 50%; animation: orbit 90s linear infinite; }
-.orbit-spin-rev { transform-origin: 50% 50%; animation: orbit 140s linear infinite reverse; }
+/* ---------- Physics motion (spring curves; transform + opacity only) ---------- */
+/* Scroll reveal: content springs up into place once, when it enters the viewport. */
+[data-reveal] { transition: opacity 0.55s var(--ease-apple), transform 0.9s var(--ease-spring-soft); transition-delay: var(--d, 0ms); }
+.motion-ready [data-reveal]:not(.in) { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.985); }
+.motion-ready [data-reveal="fade"]:not(.in) { transform: none; }
+.motion-ready [data-reveal="scale"]:not(.in) { transform: scale(0.94); }
+/* Pop-in for dialogs, toasts, menus. */
+@keyframes pop { from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.92); } to { opacity: 1; transform: none; } }
+.pop { animation: pop 0.6s var(--ease-spring) both; }
+/* Lift on hover with a springy settle. */
+.lift { transition: transform 0.6s var(--ease-spring), box-shadow 0.4s var(--ease-apple), border-color 0.3s; }
+@media (hover: hover) { .lift:hover { transform: translate3d(0, -6px, 0); box-shadow: var(--shadow-lift); } }
+.lift:active { transform: scale(0.985); transition-duration: 0.12s; }
+/* Hero sphere float. */
+@keyframes float { 0%, 100% { transform: translate3d(0, -5px, 0); } 50% { transform: translate3d(0, 5px, 0); } }
+.float { animation: float 6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .rise, .orbit-spin, .orbit-spin-rev { animation: none; }
+  .rise, .pop, .float { animation: none; }
+  .motion-ready [data-reveal]:not(.in) { opacity: 1; transform: none; }
+  .lift:hover { transform: none; }
   * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 

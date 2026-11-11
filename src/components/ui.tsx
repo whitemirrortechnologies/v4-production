@@ -9,7 +9,7 @@ type BtnProps = {
 export const btn = ({ variant = "primary", size = "md" }: BtnProps) =>
   clsx(
     "inline-flex items-center justify-center gap-2 rounded-lg font-semibold whitespace-nowrap select-none",
-    "transition-[background-color,border-color,transform,box-shadow] duration-200 ease-[var(--ease-apple)] active:scale-[0.98]",
+    "transition-[background-color,border-color,transform,box-shadow] duration-500 ease-spring active:scale-[0.96] active:duration-100 active:ease-out",
     "disabled:opacity-40 disabled:pointer-events-none",
     size === "sm" && "h-9 px-4 text-[13px]",
     size === "md" && "h-11 px-5 text-sm",

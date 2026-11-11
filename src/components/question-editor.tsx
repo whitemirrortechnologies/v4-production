@@ -76,7 +76,7 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_28rem]">
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <section className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block"><Label>Exam</Label>
@@ -109,12 +109,12 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-3 gap-4">
-            <label className="block"><Label>Difficulty</Label>
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <label className="col-span-2 block sm:col-span-1"><Label>Difficulty</Label>
               <Select value={difficulty} onChange={(e) => setDifficulty(e.target.value as typeof difficulty)}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></Select>
             </label>
             <label className="block"><Label>Marks</Label><Input type="number" step="0.5" min="0.5" value={marks} onChange={(e) => { setMarks(Number(e.target.value)); if (!exam?.code.startsWith("CAT")) applyDefaults(type, Number(e.target.value)); }} /></label>
-            <label className="block"><Label hint="deducted">Negative</Label><Input type="number" step="0.01" min="0" value={neg} onChange={(e) => setNeg(Number(e.target.value))} /></label>
+            <label className="block"><Label>Negative</Label><Input type="number" step="0.01" min="0" value={neg} onChange={(e) => setNeg(Number(e.target.value))} /></label>
           </div>
         </section>
 
@@ -189,7 +189,7 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
         </div>
       </div>
 
-      <aside className="xl:sticky xl:top-6 xl:h-fit">
+      <aside className="min-w-0 xl:sticky xl:top-6 xl:h-fit">
         <div className="mb-3 flex gap-1 rounded-lg bg-wash p-1 xl:hidden">
           {(["write", "preview"] as const).map((t) => <button key={t} type="button" onClick={() => setTab(t)} className={clsx("flex-1 rounded-md py-1.5 text-sm font-semibold capitalize", tab === t ? "bg-paper shadow-sm" : "text-ink-3")}>{t}</button>)}
         </div>

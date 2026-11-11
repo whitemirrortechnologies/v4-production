@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { delay } from "@/lib/motion";
 import clsx from "clsx";
 import { notFound, redirect } from "next/navigation";
 import { requireViewer } from "@/lib/auth";
@@ -65,7 +66,7 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
         </section>
 
         <div className="mx-auto grid max-w-[90rem] gap-6 px-4 py-12 sm:px-10 lg:grid-cols-2">
-          <section className="rounded-2xl border border-line p-6">
+          <section data-reveal className="rounded-2xl border border-line p-6">
             <h2 className="font-display text-lg font-bold tracking-tight">By section</h2>
             <div className="mt-4 divide-y divide-line">
               {r.sections.map((s) => (
@@ -76,7 +77,7 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
               ))}
             </div>
           </section>
-          <section className="rounded-2xl border border-line p-6">
+          <section data-reveal style={delay(90)} className="rounded-2xl border border-line p-6">
             <div className="flex items-baseline justify-between"><h2 className="font-display text-lg font-bold tracking-tight">By topic</h2><span className="text-xs text-ink-3">accuracy</span></div>
             <div className="mt-4 space-y-3">
               {r.topics.map((t) => {
@@ -111,7 +112,7 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
             {list.map((q) => {
               const n = r.questions.indexOf(q) + 1;
               return (
-                <li key={q.test_question_id} className="cv-auto rounded-2xl border border-line p-5 sm:p-7">
+                <li key={q.test_question_id} data-reveal className="rounded-2xl border border-line p-5 sm:p-7">
                   <div className="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
                     <span className="rounded-full bg-wash px-2.5 py-1">Q{n}</span>
                     <span className={clsx("flex items-center gap-1 rounded-full px-2.5 py-1", q.is_correct ? "bg-good/10 text-good" : q.is_correct === false ? "bg-bad/10 text-bad" : "bg-wash text-ink-3")}>

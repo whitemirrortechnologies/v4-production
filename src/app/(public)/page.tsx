@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
 import { OrbitGraphic } from "@/components/orbit-graphic";
+import { Tilt } from "@/components/motion";
+import type { CSSProperties } from "react";
+const delay = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 import { Arrow, btn, Eyebrow } from "@/components/ui";
 import { getCourses, getExamSummaries } from "@/lib/catalog";
 
@@ -8,7 +11,7 @@ export const revalidate = 60;
 
 const CHIPS: Record<string, string[]> = {
   GATE_CS: ["Concepts", "Courses", "Practice", "Tests", "Analytics"],
-  CAT: ["Quant", "VARC", "DILR", "Practice", "Mocks", "Analytics"],
+  CAT: ["Quant", "VARC", "DILR", "Mocks", "Analytics"],
 };
 const KICKER: Record<string, string> = { GATE_CS: "Engineering-focused preparation", CAT: "Aptitude-focused preparation" };
 const SUB: Record<string, string> = { GATE_CS: "Graduate Aptitude Test in Engineering", CAT: "Common Admission Test" };
@@ -51,36 +54,39 @@ export default async function Home() {
               See how V4 works <svg aria-hidden viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
             </a>
           </div>
-          <OrbitGraphic className="rise mx-auto w-full max-w-[40rem]" />
+          <Tilt className="rise mx-auto w-full max-w-[40rem]"><OrbitGraphic className="w-full" /></Tilt>
         </div>
-        <ol className="relative mx-auto flex max-w-[90rem] gap-6 overflow-x-auto border-t border-night-line px-4 py-4 font-mono text-xs text-night-ink-2 hide-scrollbar sm:gap-8 sm:px-10">
-          {["Learn", "Practice", "Test", "Analyze", "Improve"].map((s, i) => (
-            <li key={s} className="whitespace-nowrap"><span className="mr-2">0{i + 1}</span>{s}</li>
-          ))}
-        </ol>
+        <div className="relative mx-auto max-w-[90rem] px-4 sm:px-10">
+          <ol className="hide-scrollbar flex gap-6 overflow-x-auto border-t border-night-line py-4 font-mono text-xs text-night-ink-2 sm:gap-8">
+            {["Learn", "Practice", "Test", "Analyze", "Improve"].map((s, i) => (
+              <li key={s} className="whitespace-nowrap"><span className="mr-2">0{i + 1}</span>{s}</li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* ------- Exams ------- */}
       <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-10 lg:py-28">
-        <Eyebrow>Choose your exam</Eyebrow>
-        <h2 className="h1 mt-3">What are you preparing for?</h2>
+        <div data-reveal><Eyebrow>Choose your exam</Eyebrow>
+        <h2 className="h1 mt-3">What are you preparing for?</h2></div>
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
-          {exams.map((e) => (
-            <article key={e.id} className="on-night relative overflow-hidden rounded-3xl bg-night p-8 text-white sm:p-11">
+          {exams.map((e, i) => (
+            <div key={e.id} data-reveal style={delay(i * 90)} className="flex">
+            <article className="on-night lift relative flex w-full flex-col overflow-hidden rounded-3xl bg-night p-8 text-white sm:p-11">
               <div className="grid-bg glow-top absolute inset-0 opacity-90" aria-hidden />
-              <div className="relative">
+              <div className="relative flex flex-1 flex-col">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">{KICKER[e.code] ?? "Exam preparation"}</p>
                 <p className="display mt-6" style={{ fontSize: "clamp(3.5rem, 2rem + 6vw, 6rem)" }}>{e.code.split("_")[0]}</p>
                 <p className="mt-2 text-night-ink">{SUB[e.code] ?? e.name}</p>
                 <ul className="mt-7 flex flex-wrap items-center gap-2 text-sm">
-                  {(CHIPS[e.code] ?? ["Courses", "Practice", "Tests"]).map((c, i, a) => (
+                  {(CHIPS[e.code] ?? ["Courses", "Practice", "Tests"]).map((c, i) => (
                     <li key={c} className="flex items-center gap-2">
+                      {i > 0 && <span aria-hidden className="text-night-ink-2">→</span>}
                       <span className="rounded-full border border-night-line-2 bg-night-3 px-3.5 py-1.5 text-white">{c}</span>
-                      {i < a.length - 1 && <span aria-hidden className="text-night-ink-2">→</span>}
                     </li>
                   ))}
                 </ul>
-                <div className="mt-12 flex flex-wrap items-end justify-between gap-6">
+                <div className="mt-auto flex flex-wrap items-end justify-between gap-6 pt-12">
                   <dl className="flex gap-8">
                     {[["Courses", e.courses], [e.code === "CAT" ? "Sections" : "Subjects", e.sections], ["Tests", e.tests]].map(([k, v]) => (
                       <div key={k as string}><dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-night-ink-2">{k}</dt><dd className="mt-1 font-display text-2xl font-bold">{v}</dd></div>
@@ -90,6 +96,7 @@ export default async function Home() {
                 </div>
               </div>
             </article>
+            </div>
           ))}
         </div>
       </section>
@@ -97,7 +104,7 @@ export default async function Home() {
       {/* ------- Why V4 ------- */}
       <section className="bg-wash py-20 lg:py-28">
         <div className="mx-auto grid max-w-[90rem] gap-12 px-4 sm:px-10 lg:grid-cols-[1fr_1.5fr]">
-          <div>
+          <div data-reveal>
             <Eyebrow>Why V4</Eyebrow>
             <h2 className="h1 mt-3">Not a video library.<br />A preparation loop.</h2>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-2">
@@ -105,11 +112,11 @@ export default async function Home() {
             </p>
           </div>
           <ol className="border-t border-line-strong">
-            {LOOP.map(([n, name, title, body]) => (
-              <li key={n} className="grid grid-cols-[6.5rem_1fr_auto] items-start gap-4 border-b border-line-strong py-7 sm:grid-cols-[9rem_1fr_auto]">
+            {LOOP.map(([n, name, title, body], i) => (
+              <li key={n} data-reveal style={delay(i * 70)} className="group grid grid-cols-[6.5rem_1fr_auto] items-start gap-4 border-b border-line-strong py-7 sm:grid-cols-[9rem_1fr_auto]">
                 <p className="font-mono text-lg font-bold"><span className="mr-2">{n}</span><span className="font-display">{name}</span></p>
                 <div><p className="font-semibold">{title}</p><p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-3">{body}</p></div>
-                <Arrow className="mt-1 size-5 text-ink-3" />
+                <Arrow className="mt-1 size-5 text-ink-3 transition-transform duration-500 ease-spring group-hover:translate-x-1" />
               </li>
             ))}
           </ol>
@@ -120,24 +127,24 @@ export default async function Home() {
       {courses.length > 0 && (
         <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-10 lg:py-28">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <div><Eyebrow>Start learning</Eyebrow><h2 className="h1 mt-3">Featured courses</h2></div>
+            <div data-reveal><Eyebrow>Start learning</Eyebrow><h2 className="h1 mt-3">Featured courses</h2></div>
             <Link href="/courses" className={btn({ variant: "outline" })}>All courses <Arrow /></Link>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.slice(0, 6).map((c) => <CourseCard key={c.id} course={c} />)}</div>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.slice(0, 6).map((c, i) => <div key={c.id} data-reveal style={delay(i * 70)}><CourseCard course={c} /></div>)}</div>
         </section>
       )}
 
       {/* ------- How it works ------- */}
       <section id="how" className="on-night bg-night py-20 text-white lg:py-28">
         <div className="mx-auto max-w-[90rem] px-4 sm:px-10">
-          <Eyebrow dark>How V4 works</Eyebrow>
-          <h2 className="h1 mt-3">Three steps. Then repeat.</h2>
+          <div data-reveal><Eyebrow dark>How V4 works</Eyebrow>
+          <h2 className="h1 mt-3">Three steps. Then repeat.</h2></div>
           <ol className="mt-14 grid gap-0 md:grid-cols-3">
             {[["01", "Choose your exam", "Pick GATE or CAT. V4 shapes courses, practice and tests around that goal."],
               ["02", "Follow a clear path", "Work through structured lectures, then practise each topic while it is fresh."],
               ["03", "Measure and improve", "Take tests, see exactly where marks are lost, and let V4 point you to the next step."]].map(([n, t, d]) => (
-              <li key={n} className="relative border-t border-night-line px-0 py-8 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
-                <span aria-hidden className="absolute -top-px left-0 h-0.5 w-12 bg-violet-500 md:left-8 md:[li:first-child>&]:left-0" />
+              <li key={n} data-reveal style={delay(Number(n) * 80)} className="border-t border-night-line pb-8 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
+                <span aria-hidden className="-mt-px mb-8 block h-0.5 w-12 bg-violet-500" />
                 <p className="font-display text-6xl font-bold text-transparent [-webkit-text-stroke:1px_#3a3a3a]">{n}</p>
                 <h3 className="mt-6 text-xl font-bold tracking-tight">{t}</h3>
                 <p className="mt-2 max-w-xs leading-relaxed text-night-ink">{d}</p>
@@ -149,8 +156,8 @@ export default async function Home() {
 
       {/* ------- FAQ ------- */}
       <section className="mx-auto grid max-w-[90rem] gap-12 px-4 py-20 sm:px-10 lg:grid-cols-[1fr_1.7fr] lg:py-28">
-        <div><Eyebrow>FAQ</Eyebrow><h2 className="h1 mt-3">Good questions</h2></div>
-        <div className="border-t border-line-strong">
+        <div data-reveal><Eyebrow>FAQ</Eyebrow><h2 className="h1 mt-3">Good questions</h2></div>
+        <div data-reveal className="border-t border-line-strong">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group border-b border-line-strong">
               <summary className="flex cursor-pointer items-center justify-between gap-4 py-5 font-semibold">

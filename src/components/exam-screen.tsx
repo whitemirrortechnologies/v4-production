@@ -264,7 +264,7 @@ export function ExamScreen({ paper }: { paper: Paper }) {
 
       {confirm && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={() => !busy && setConfirm(null)}>
-          <div role="alertdialog" aria-modal className="rise w-full max-w-md rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
+          <div role="alertdialog" aria-modal className="pop w-full max-w-md rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
             <p className="font-display text-xl font-bold tracking-tight">{confirm === "submit" ? "Submit the test?" : `Finish ${secName}?`}</p>
             <p className="mt-2 text-sm text-ink-3">{confirm === "submit" ? "You can't change answers after submitting." : "You won't be able to come back to this section."}</p>
             <dl className="mt-5 grid grid-cols-2 gap-2 text-sm">

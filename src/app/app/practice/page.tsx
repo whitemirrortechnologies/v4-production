@@ -49,7 +49,7 @@ export default async function PracticeHome({ searchParams }: { searchParams: Pro
         {exam && (
           <ActionForm action={startPractice} className="mt-8 grid gap-6 lg:grid-cols-[1fr_22rem]">
             <input type="hidden" name="exam_id" value={exam.id} />
-            <div className="space-y-3">
+            <div className="min-w-0 space-y-3">
               {sections.map((s) => {
                 const top = s.topics.filter((t) => !t.parent_id).sort((a, b) => a.position - b.position);
                 return (
@@ -57,10 +57,10 @@ export default async function PracticeHome({ searchParams }: { searchParams: Pro
                     <summary className="flex cursor-pointer items-center gap-4 px-5 py-4">
                       <span className="w-12 shrink-0 font-mono text-xs font-bold text-violet-600">{s.name.split(/\s+/).map((w) => w[0]).join("").slice(0, 4).toUpperCase()}</span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-semibold">{s.name}</span>
+                        <span className="block truncate font-semibold">{s.name}</span>
                         <span className="block truncate text-xs text-ink-3">{top.map((t) => t.name).join(" · ")}</span>
                       </span>
-                      <span className="text-xs font-semibold text-ink-3 group-open:hidden">Choose</span>
+                      <span className="hidden text-xs font-semibold text-ink-3 group-open:hidden sm:inline">Choose</span>
                     </summary>
                     <div className="flex flex-wrap gap-2 border-t border-line px-5 py-4">
                       <label className={clsx(chip, "border-dashed font-semibold")}><input type="checkbox" name="sections" value={s.id} className="sr-only" />Whole section</label>
@@ -99,7 +99,7 @@ export default async function PracticeHome({ searchParams }: { searchParams: Pro
             <h2 className="h2">Recent sessions</h2>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {recent.map((r) => (
-                <Link key={r.id} href={`/app/practice/${r.id}`} className="rounded-2xl border border-line p-5 transition-colors hover:bg-wash">
+                <Link key={r.id} href={`/app/practice/${r.id}`} className="lift rounded-2xl border border-line p-5">
                   <p className="text-xs text-ink-3">{new Date(r.started_at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</p>
                   <p className="mt-2 font-display text-2xl font-bold">{r.correct_count}<span className="text-base font-medium text-ink-3"> / {r.answered_count} correct</span></p>
                   <p className="mt-1 text-sm text-ink-3">{r.ended_at ? "Completed" : `${r.question_count - r.answered_count} left · continue`}</p>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { delay } from "@/lib/motion";
 import clsx from "clsx";
 import { CourseCard } from "@/components/course-card";
 import { Button, Empty, Eyebrow, Input, Select } from "@/components/ui";
@@ -53,7 +54,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
 
       <div className="mt-8">
         {list.length ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{list.map((c) => <CourseCard key={c.id} course={c} />)}</div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{list.map((c, i) => <div key={c.id} data-reveal style={delay((i % 3) * 70)}><CourseCard course={c} /></div>)}</div>
         ) : <Empty title="No courses match">Try clearing a filter or search term.</Empty>}
       </div>
     </main>

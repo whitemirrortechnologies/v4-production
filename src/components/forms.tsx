@@ -43,7 +43,7 @@ export function ActionForm({
       </form>
       {asking && (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setAsking(false)}>
-          <div role="alertdialog" aria-modal className="rise w-full max-w-sm rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
+          <div role="alertdialog" aria-modal className="pop w-full max-w-sm rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}>
             <p className="font-display text-lg font-bold tracking-tight">Are you sure?</p>
             <p className="mt-2 text-sm leading-relaxed text-ink-3">{confirm}</p>
             <div className="mt-6 flex justify-end gap-2">

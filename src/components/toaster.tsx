@@ -22,7 +22,7 @@ export function Toaster() {
     <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-5 z-[100] flex flex-col items-center gap-2 px-4">
       {items.map((t) => (
         <div key={t.id} role={t.tone === "error" ? "alert" : "status"}
-          className={clsx("rise pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium shadow-lift",
+          className={clsx("pop pointer-events-auto flex max-w-md items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium shadow-lift",
             t.tone === "error" ? "bg-bad text-white" : "bg-ink text-white")}>
           {t.tone === "error" ? <IconAlert size={16} /> : <IconCheckCircle size={16} className="text-[#4ade80]" />}
           {t.text}

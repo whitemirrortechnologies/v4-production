@@ -194,7 +194,7 @@ export function PracticeSession({ data }: { data: PSession }) {
 
       {reporting && (
         <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/40 p-4 sm:items-center" onClick={() => setReporting(false)}>
-          <form className="rise w-full max-w-md space-y-4 rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}
+          <form className="pop w-full max-w-md space-y-4 rounded-2xl bg-paper p-6 shadow-lift" onClick={(e) => e.stopPropagation()}
             action={(fd) => start(async () => { const r = await reportQuestion(fd); toast(r?.error ?? r?.ok ?? "", r?.error ? "error" : "success"); if (!r?.error) setReporting(false); })}>
             <p className="font-display text-lg font-bold tracking-tight">Report a problem</p>
             <input type="hidden" name="question_id" value={q.question_id} /><input type="hidden" name="practice_session_id" value={data.session_id} />
