@@ -20,7 +20,7 @@ export function CourseArt({ title, slug, tag, className = "" }: { title: string;
           <circle r="6" fill="#635bff" stroke="none" />
         </g>
       </svg>
-      <span className="absolute left-3.5 top-3.5 rounded-full border border-night-line-2 bg-night-3 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">{tag}</span>
+      <span className="absolute left-3.5 top-3.5 rounded-full border border-night-line-2 bg-night-3 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white">{tag}</span>
       <span className="absolute bottom-3 left-4 font-display text-[2.75rem] font-bold leading-none tracking-[-0.045em] text-white/95">{courseCode(title)}</span>
     </div>
   );

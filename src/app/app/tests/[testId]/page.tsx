@@ -37,7 +37,7 @@ export default async function TestIntro({ params }: { params: Promise<{ testId: 
     <>
       <SiteHeader />
       <main id="main" className="mx-auto max-w-4xl px-4 py-14 sm:px-8">
-        <Link href="/app/tests" className="text-sm text-ink-3 hover:text-ink">← Tests</Link>
+        <Link href="/app/tests" className="tap text-sm text-ink-3 hover:text-ink">← Tests</Link>
         <div className="mt-5"><Eyebrow>{exam.name}</Eyebrow></div>
         <h1 className="h1 mt-3">{t.title}</h1>
 

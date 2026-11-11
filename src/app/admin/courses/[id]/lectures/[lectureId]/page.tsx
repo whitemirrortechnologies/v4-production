@@ -25,7 +25,7 @@ export default async function LecturePage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <Link href={`/admin/courses/${id}`} className="text-sm text-ink-3 hover:text-ink">← Back to curriculum</Link>
+      <Link href={`/admin/courses/${id}`} className="tap text-sm text-ink-3 hover:text-ink">← Back to curriculum</Link>
       <div className="mb-8 mt-3 flex flex-wrap items-center gap-3">
         <h1 className="h2">{lec.title}</h1>
         <Badge tone={lec.status === "published" ? "good" : "neutral"}>{lec.status === "published" ? "Live" : lec.status}</Badge>

@@ -178,7 +178,7 @@ export function ExamScreen({ paper }: { paper: Paper }) {
   return (
     <div className="flex h-dvh flex-col bg-paper">
       {/* Top bar */}
-      <header className="flex h-14 shrink-0 items-center gap-3 bg-night px-3 text-white sm:px-5">
+      <header className="flex h-14 shrink-0 items-center gap-3 bg-night px-3 text-white sm:px-5 [@media(max-height:500px)]:h-10">
         <p className="min-w-0 flex-1 truncate text-sm font-semibold">{paper.test.title}</p>
         {secLeft !== null && <span className={clsx("hidden items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm tabular-nums sm:flex", secLeft < 300 ? "bg-bad" : "bg-white/10")}>{secName} {clock(secLeft)}</span>}
         <span className={clsx("flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-display text-base font-bold tabular-nums", left < 300 ? "bg-bad" : "bg-white/10")} role="timer" aria-live="off"><IconClock size={15} />{clock(secLeft ?? left)}</span>
@@ -191,7 +191,7 @@ export function ExamScreen({ paper }: { paper: Paper }) {
           const first = qs.findIndex((x) => x.section_id === s.id);
           return (
             <button key={s.id} disabled={locked || first < 0} onClick={() => first >= 0 && go(first, "move")}
-              className={clsx("-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold", s.id === sectionId ? "border-violet-500 text-ink" : "border-transparent text-ink-3", locked && "opacity-50")}>
+              className={clsx("-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold [@media(max-height:500px)]:py-1.5", s.id === sectionId ? "border-violet-500 text-ink" : "border-transparent text-ink-3", locked && "opacity-50")}>
               {locked && <IconLock size={12} />}{s.name}
             </button>
           );
@@ -206,7 +206,7 @@ export function ExamScreen({ paper }: { paper: Paper }) {
                 <p className="mb-3 text-sm font-semibold">{q.group.title}</p><Rich text={q.group.content} className="text-[15px]" />
               </section>
             )}
-            <section className="scroll-y h-full p-5 sm:p-8">
+            <section className="scroll-y h-full p-5 sm:p-8 [@media(max-height:500px)]:p-4">
               <div className="mx-auto max-w-3xl">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                   <p className="font-semibold">Question {posInSection + 1}<span className="font-normal text-ink-3"> of {inSection.length}</span></p>
@@ -240,7 +240,7 @@ export function ExamScreen({ paper }: { paper: Paper }) {
             </section>
           </div>
           {/* Action bar */}
-          <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-line bg-paper px-3 py-3 sm:px-5">
+          <div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-line bg-paper px-3 py-3 sm:px-5 [@media(max-height:500px)]:py-1.5">
             <button onClick={() => go(nextIndex(), "mark")} className={btn({ variant: "outline", size: "sm" })}>Mark for review &amp; next</button>
             <button onClick={clear} className={btn({ variant: "ghost", size: "sm" })}>Clear response</button>
             <div className="ml-auto flex gap-2">

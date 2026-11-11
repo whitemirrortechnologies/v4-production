@@ -51,6 +51,7 @@
 
 html {
   color-scheme: light;
+  overflow-x: clip; /* never scroll sideways (clip, unlike hidden, keeps position:sticky working) */
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   scroll-padding-top: 5rem;
@@ -151,3 +152,16 @@ details > summary::-webkit-details-marker { display: none; }
 .rich table { border-collapse: collapse; font-size: 0.9em; } .rich th, .rich td { border: 1px solid var(--color-line-strong); padding: 0.4em 0.7em; }
 .rich img { max-width: 100%; border-radius: 10px; }
 .rich .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+
+/* ---------- Touch devices ---------- */
+@media (pointer: coarse) {
+  /* iOS Safari zooms into any field under 16px on focus; keep fields at 16px on touch screens. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.font-display):not(.text-lg),
+  select, textarea { font-size: 16px; }
+  input[type="checkbox"], input[type="radio"] { width: 20px; height: 20px; }
+  /* rows with a checkbox become full-height touch targets */
+  label:has(> input[type="checkbox"]), label:has(> input[type="radio"]) { min-height: 44px; }
+}
+/* Bigger touch area without changing the look (for small text links). */
+.tap { position: relative; }
+.tap::after { content: ""; position: absolute; inset: -12px -8px; }

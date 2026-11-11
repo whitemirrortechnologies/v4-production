@@ -16,7 +16,7 @@ export default async function SeriesAdmin() {
   ]);
   return (
     <>
-      <Link href="/admin/tests" className="text-sm text-ink-3 hover:text-ink">← Tests</Link>
+      <Link href="/admin/tests" className="tap text-sm text-ink-3 hover:text-ink">← Tests</Link>
       <div className="mt-3"><PageHeader title="Test series" subtitle="Bundles of tests sold on their own. Add tests to a series from each test's Access tab." /></div>
       <Card className="mb-8 p-5">
         <ActionForm action={createSeries} className="grid gap-4 sm:grid-cols-[1fr_14rem_auto] sm:items-end">

@@ -17,7 +17,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     <>
       <SiteHeader />
       <main id="main" className="mx-auto max-w-6xl px-4 py-8 sm:px-8 lg:py-12">
-        <Link href="/app/practice" className="text-sm text-ink-3 hover:text-ink">← Practice</Link>
+        <Link href="/app/practice" className="tap text-sm text-ink-3 hover:text-ink">← Practice</Link>
         <div className="mt-5"><PracticeSession data={data as PSession} /></div>
       </main>
     </>

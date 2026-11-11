@@ -31,7 +31,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
 
   return (
     <>
-      <Link href="/admin/questions" className="text-sm text-ink-3 hover:text-ink">← Questions</Link>
+      <Link href="/admin/questions" className="tap text-sm text-ink-3 hover:text-ink">← Questions</Link>
       <div className="mb-8 mt-3 flex flex-wrap items-center justify-between gap-3">
         <h1 className="h2">{isNew ? "New question" : "Edit question"}</h1>
         {!isNew && (

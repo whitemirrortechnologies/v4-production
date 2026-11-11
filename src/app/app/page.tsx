@@ -103,7 +103,7 @@ export default async function Dashboard() {
         <section className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
           <div className="flex items-end justify-between gap-4">
             <h2 className="h2">My courses</h2>
-            <Link href="/courses" className="text-sm font-semibold text-violet-600 hover:underline">Browse all</Link>
+            <Link href="/courses" className="tap text-sm font-semibold text-violet-600 hover:underline">Browse all</Link>
           </div>
           {mine.length ? (
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

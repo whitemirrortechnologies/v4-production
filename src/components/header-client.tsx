@@ -30,7 +30,7 @@ export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: s
   return (
     <header className="sticky top-0 z-40 border-b border-night-line bg-night">
       <div className="mx-auto flex h-16 max-w-[90rem] items-center justify-between gap-4 px-4 sm:px-10">
-        <Link href={signedIn ? "/app" : "/"} aria-label={`${name} home`}><Logo name={name} /></Link>
+        <Link href={signedIn ? "/app" : "/"} aria-label={`${name} home`} className="flex h-11 items-center"><Logo name={name} /></Link>
 
         <nav aria-label="Main" className="hidden h-full items-stretch gap-1 md:flex">
           {LINKS.map((l) => (
@@ -55,7 +55,7 @@ export function HeaderClient({ name, signedIn, staff, initial = "?" }: { name: s
             </details>
           ) : (
             <>
-              <Link href="/login" className="px-3 text-sm font-semibold text-white">Log in</Link>
+              <Link href="/login" className="inline-flex h-10 items-center px-3 text-sm font-semibold text-white">Log in</Link>
               <Link href="/signup" className={btn({ variant: "inverse", size: "sm" })}>Get started</Link>
             </>
           )}

@@ -42,7 +42,7 @@ export default async function EditTest({ params, searchParams }: { params: Promi
 
   return (
     <>
-      <Link href="/admin/tests" className="text-sm text-ink-3 hover:text-ink">← Tests</Link>
+      <Link href="/admin/tests" className="tap text-sm text-ink-3 hover:text-ink">← Tests</Link>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="h2">{test.title}</h1>
@@ -65,7 +65,7 @@ export default async function EditTest({ params, searchParams }: { params: Promi
             return (
               <Card key={s.id} className="p-4 sm:p-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <InlineEdit action={updateTestSection} name="name" value={s.name} label="Section name" fields={{ id: s.id, test_id: id }} className="font-display text-lg font-bold tracking-tight" />
+                  <div className="flex w-full min-w-40 sm:w-auto sm:flex-1"><InlineEdit action={updateTestSection} name="name" value={s.name} label="Section name" fields={{ id: s.id, test_id: id }} className="font-display text-lg font-bold tracking-tight" /></div>
                   <ActionForm action={updateTestSection} className="flex items-center gap-1.5">
                     <input type="hidden" name="id" value={s.id} /><input type="hidden" name="test_id" value={id} />
                     <label className="text-xs text-ink-3" htmlFor={`d-${s.id}`}>Own timer</label>
@@ -83,7 +83,7 @@ export default async function EditTest({ params, searchParams }: { params: Promi
                     <li key={r.id} className="group/row flex items-center gap-3 px-3 py-2.5">
                       <span className="w-6 text-right text-xs font-semibold tabular-nums text-ink-3">{n + 1}</span>
                       <span className="w-10 font-mono text-xs font-bold text-violet-600">{TYPE_SHORT[r.question.type as QuestionType]}</span>
-                      <Link href={`/admin/questions/${r.question.id}`} className="min-w-0 flex-1 truncate text-sm hover:underline">{plain(r.question.stem)}</Link>
+                      <Link href={`/admin/questions/${r.question.id}`} className="min-w-0 flex-1 truncate py-2.5 text-sm hover:underline">{plain(r.question.stem)}</Link>
                       <ActionForm action={setQuestionMarks} className="hidden items-center gap-1 sm:flex">
                         <input type="hidden" name="id" value={r.id} /><input type="hidden" name="test_id" value={id} />
                         <input name="marks" type="number" step="0.5" aria-label="Marks" defaultValue={r.marks ?? ""} placeholder={String(r.question.marks)} className="h-8 w-14 rounded-lg border border-line px-2 text-xs" />

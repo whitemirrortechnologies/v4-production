@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-dvh bg-[#fafafa] lg:grid lg:grid-cols-[16rem_1fr]">
       <aside className="bg-night text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
         <div className="flex items-center justify-between px-5 py-4 lg:block lg:px-6 lg:py-6">
-          <Link href="/" aria-label="Home"><Logo name={env.siteName} /></Link>
+          <Link href="/" aria-label="Home" className="inline-flex h-11 items-center"><Logo name={env.siteName} /></Link>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-violet-300 lg:mt-3">{profile.role} console</p>
         </div>
         <AdminNav links={nav} />

@@ -64,7 +64,7 @@ export default async function Checkout({ params, searchParams }: {
           </form>
           <p className="mt-4 text-center text-xs text-ink-3">Payments are in demo mode: no real money is charged.</p>
         </Card>
-        <p className="mt-6 text-center text-sm"><Link className="text-ink-3 hover:text-ink" href={course ? `/courses/${course.slug}` : "/courses"}>← Back</Link></p>
+        <p className="mt-6 text-center text-sm"><Link className="tap text-ink-3 hover:text-ink" href={course ? `/courses/${course.slug}` : "/courses"}>← Back</Link></p>
       </main>
       <SiteFooter />
     </>

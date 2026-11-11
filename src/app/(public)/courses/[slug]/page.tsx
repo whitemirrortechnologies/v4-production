@@ -89,7 +89,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                                 <span className="flex items-center gap-2">
                                   <span className="text-ink-4">{enrolled || l.is_free_preview ? <IconPlay size={13} className="text-violet-600" /> : <IconLock size={14} />}</span>
                                   {enrolled || l.is_free_preview ? (
-                                    <a className="hover:underline" href={`/app/learn/${course.slug}/${l.id}`}>{l.title}</a>
+                                    <a className="tap hover:underline" href={`/app/learn/${course.slug}/${l.id}`}>{l.title}</a>
                                   ) : l.title}
                                   {l.is_free_preview && <Badge tone="violet">Free</Badge>}
                                 </span>

@@ -21,7 +21,7 @@ export default async function SeriesPage({ params }: { params: Promise<{ id: str
   const tests = (links ?? []).map((l) => (Array.isArray(l.test) ? l.test[0] : l.test) as { id: string; title: string; status: string } | null).filter(Boolean);
   return (
     <>
-      <Link href="/admin/series" className="text-sm text-ink-3 hover:text-ink">← Test series</Link>
+      <Link href="/admin/series" className="tap text-sm text-ink-3 hover:text-ink">← Test series</Link>
       <h1 className="h2 mb-8 mt-3">{s.title}</h1>
       <div className="grid max-w-5xl gap-6 lg:grid-cols-2">
         <Card className="p-6">

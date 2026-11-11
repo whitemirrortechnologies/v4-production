@@ -60,7 +60,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
 
   return (
     <>
-      <Link href="/admin/courses" className="text-sm text-ink-3 hover:text-ink">← Courses</Link>
+      <Link href="/admin/courses" className="tap text-sm text-ink-3 hover:text-ink">← Courses</Link>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="h2">{course.title}</h1>

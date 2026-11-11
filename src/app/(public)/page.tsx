@@ -58,13 +58,13 @@ export default async function Home() {
               <Link href="/exams/gate_cs" className={btn({ variant: "inverse", size: "lg" })}>Explore GATE</Link>
               <Link href="/exams/cat" className={`${btn({ variant: "outlineDark", size: "lg" })} bg-night/40 backdrop-blur-sm`}>Explore CAT</Link>
             </div>
-            <a href="#how" className="rise mt-8 inline-flex items-center gap-2 text-sm font-medium text-night-ink hover:text-white" style={{ animationDelay: "240ms" }}>
+            <a href="#how" className="tap rise mt-8 inline-flex items-center gap-2 text-sm font-medium text-night-ink hover:text-white" style={{ animationDelay: "240ms" }}>
               See how V4 works <svg aria-hidden viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
             </a>
           </div>
         </div>
         <div className="relative mx-auto w-full max-w-[90rem] px-4 sm:px-10">
-          <ol className="hide-scrollbar flex gap-6 overflow-x-auto border-t border-night-line py-4 font-mono text-xs text-night-ink-2 sm:gap-8">
+          <ol className="flex flex-wrap gap-x-5 gap-y-2 border-t border-night-line py-4 font-mono text-xs text-night-ink-2 sm:gap-x-8">
             {["Learn", "Practice", "Test", "Analyze", "Improve"].map((s, i) => (
               <li key={s} className="whitespace-nowrap"><span className="mr-2">0{i + 1}</span>{s}</li>
             ))}
@@ -78,8 +78,8 @@ export default async function Home() {
         <h2 className="h1 mt-3">What are you preparing for?</h2></div>
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
           {exams.map((e, i) => (
-            <div key={e.id} data-reveal style={delay(i * 90)} className="flex">
-            <article className="on-night lift relative flex w-full flex-col overflow-hidden rounded-3xl bg-night p-8 text-white sm:p-11">
+            <div key={e.id} data-reveal style={delay(i * 90)} className="flex min-w-0">
+            <article className="on-night lift relative flex w-full min-w-0 flex-col overflow-hidden rounded-3xl bg-night p-6 text-white sm:p-11">
               <div className="grid-bg glow-top absolute inset-0 opacity-90" aria-hidden />
               <div className="relative flex flex-1 flex-col">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">{KICKER[e.code] ?? "Exam preparation"}</p>
@@ -94,7 +94,7 @@ export default async function Home() {
                   ))}
                 </ul>
                 <div className="mt-auto flex flex-wrap items-end justify-between gap-6 pt-12">
-                  <dl className="flex gap-8">
+                  <dl className="flex flex-wrap gap-x-8 gap-y-3">
                     {[["Courses", e.courses], [e.code === "CAT" ? "Sections" : "Subjects", e.sections], ["Tests", e.tests]].map(([k, v]) => (
                       <div key={k as string}><dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-night-ink-2">{k}</dt><dd className="mt-1 font-display text-2xl font-bold">{v}</dd></div>
                     ))}

@@ -20,26 +20,26 @@ export async function SiteFooter() {
           <Logo name={env.siteName} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for GATE CS/IT and CAT. Learn, practise, test and improve.</p>
         </div>
-        <nav aria-label="Explore" className="flex flex-col gap-2.5 text-sm">
+        <nav aria-label="Explore" className="flex flex-col gap-4 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Explore</p>
-          <Link className="hover:text-white" href="/exams">Exams</Link>
-          <Link className="hover:text-white" href="/courses">Courses</Link>
-          <Link className="hover:text-white" href="/exams/gate_cs">GATE</Link>
-          <Link className="hover:text-white" href="/exams/cat">CAT</Link>
+          <Link className="tap hover:text-white" href="/exams">Exams</Link>
+          <Link className="tap hover:text-white" href="/courses">Courses</Link>
+          <Link className="tap hover:text-white" href="/exams/gate_cs">GATE</Link>
+          <Link className="tap hover:text-white" href="/exams/cat">CAT</Link>
         </nav>
-        <nav aria-label="Account" className="flex flex-col gap-2.5 text-sm">
+        <nav aria-label="Account" className="flex flex-col gap-4 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Account</p>
           {viewer ? (
             <>
-              <Link className="hover:text-white" href="/app">My learning</Link>
-              <Link className="hover:text-white" href="/app/practice">Practice</Link>
-              <Link className="hover:text-white" href="/app/tests">Tests</Link>
-              <Link className="hover:text-white" href="/app/settings">Settings</Link>
+              <Link className="tap hover:text-white" href="/app">My learning</Link>
+              <Link className="tap hover:text-white" href="/app/practice">Practice</Link>
+              <Link className="tap hover:text-white" href="/app/tests">Tests</Link>
+              <Link className="tap hover:text-white" href="/app/settings">Settings</Link>
             </>
           ) : (
             <>
-              <Link className="hover:text-white" href="/login">Log in</Link>
-              <Link className="hover:text-white" href="/signup">Create account</Link>
+              <Link className="tap hover:text-white" href="/login">Log in</Link>
+              <Link className="tap hover:text-white" href="/signup">Create account</Link>
             </>
           )}
         </nav>
@@ -49,8 +49,8 @@ export async function SiteFooter() {
           <p>© {new Date().getFullYear()} {env.siteName}. All rights reserved.</p>
           <Credit dark className="order-last w-full sm:order-none sm:w-auto" />
           <nav aria-label="Legal" className="flex flex-wrap gap-5">
-            <Link className="hover:text-white" href="/terms">Terms</Link><Link className="hover:text-white" href="/privacy">Privacy</Link>
-            <Link className="hover:text-white" href="/refund-policy">Refunds</Link><Link className="hover:text-white" href="/contact">Contact</Link>
+            <Link className="tap hover:text-white" href="/terms">Terms</Link><Link className="tap hover:text-white" href="/privacy">Privacy</Link>
+            <Link className="tap hover:text-white" href="/refund-policy">Refunds</Link><Link className="tap hover:text-white" href="/contact">Contact</Link>
           </nav>
         </div>
       </div>

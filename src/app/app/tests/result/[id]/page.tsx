@@ -93,7 +93,7 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
             {weak.length > 0 && (
               <div className="mt-6 rounded-xl bg-violet-50 p-4 text-sm">
                 <p className="font-semibold text-violet-900">Focus next on: {weak.map((w) => w.topic).join(", ")}</p>
-                <Link href="/app/practice" className="mt-2 inline-block font-semibold text-violet-600 hover:underline">Practise these topics →</Link>
+                <Link href="/app/practice" className="tap mt-2 inline-block font-semibold text-violet-600 hover:underline">Practise these topics →</Link>
               </div>
             )}
           </section>
@@ -102,7 +102,7 @@ export default async function ResultPage({ params, searchParams }: { params: Pro
         <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h2 className="h2">Solutions</h2>
-            <nav className="inline-flex rounded-lg border border-line bg-wash p-1 text-sm" aria-label="Filter">
+            <nav className="hide-scrollbar inline-flex max-w-full overflow-x-auto rounded-lg border border-line bg-wash p-1 text-sm" aria-label="Filter">
               {[["all", "All"], ["wrong", "Wrong"], ["skipped", "Skipped"], ["correct", "Correct"]].map(([k, l]) => (
                 <Link key={k} href={`?show=${k}`} scroll={false} className={clsx("rounded-md px-4 py-1.5 font-semibold", show === k ? "bg-ink text-white" : "text-ink-3 hover:text-ink")}>{l}</Link>
               ))}
