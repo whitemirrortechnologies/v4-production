@@ -237,6 +237,8 @@ Razorpay later: same flow, real checkout plus signature-verified webhook.
 /app/tests/[attemptId]/result
 
 /admin                    analytics overview
+/admin/syllabus           exams → sections → topics → subtopics: add, rename, drag-to-reorder, nest,
+                          question count per topic, hide exams; delete blocked while questions use a topic
 /admin/courses            list → /admin/courses/[id] (curriculum tree editor, drag-to-reorder)
 /admin/questions          bank: search/filter, editor with live KaTeX preview, bulk CSV import
 /admin/tests              test builder (pick questions by filter, sections, marking)
@@ -285,7 +287,7 @@ Implemented as SQL views / materialized views refreshed by `pg_cron`.
 | # | Milestone | Result you can try |
 |---|---|---|
 | M0 | Scaffold: Next.js, local Supabase, schema/RLS base, R2 adapter, dev "act as" switcher, CI | App runs, switch between admin/faculty/student |
-| M1 | Catalog + curriculum editor | Admin builds a course tree. Students browse with real counts |
+| M1 | Syllabus manager + catalog + curriculum editor | Admin manages exams/topics and builds course trees. Students browse with real counts |
 | M2 | Video upload + player + resume | Admin uploads, student watches and resumes |
 | M3 | Demo checkout + enrollment gating | Buy → access unlocks |
 | M4 | Question bank + practice | Admin authors MCQ/MSQ/NAT/TITA + PYQs. Students practice |
