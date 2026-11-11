@@ -142,7 +142,7 @@ create table public.lectures (
   title            text not null check (length(btrim(title)) > 0),
   description      text,
   position         int not null default 0,
-  is_free_preview  boolean not null default false,
+  is_free_preview  boolean not null default false,   -- admin-only: watchable without a purchase
   video_provider   text not null default 'supabase' check (video_provider in ('supabase', 'r2')),
   video_path       text,
   video_status     public.video_status not null default 'none',
@@ -184,6 +184,7 @@ create table public.questions (
   negative_marks numeric(5,2) not null default 0 check (negative_marks >= 0),
   is_pyq         boolean not null default false,
   pyq_year       smallint check (pyq_year between 1990 and 2100),
+  is_free_practice boolean not null default false,  -- admin-only: practisable without a purchase
   pyq_paper      text,
   status         public.content_status not null default 'draft',
   created_by     uuid references public.profiles(id) on delete set null,
@@ -228,7 +229,7 @@ create table public.tests (
   kind             public.test_kind not null default 'full_mock',
   instructions     text,
   duration_minutes int not null check (duration_minutes > 0),
-  is_free          boolean not null default false,
+  is_free          boolean not null default false,  -- admin-only: any signed-in user can take it
   max_attempts     int check (max_attempts > 0),           -- null = unlimited
   available_from   timestamptz,
   available_until  timestamptz,
@@ -548,6 +549,7 @@ create index on public.chapter_topics (topic_id);
 create index on public.question_groups (exam_id);
 create index on public.questions (exam_id, status, topic_id, difficulty);
 create index on public.questions (topic_id);
+create index on public.questions (exam_id) where is_free_practice;
 create index on public.questions (group_id);
 create index on public.questions (exam_id, pyq_year) where is_pyq;
 create index on public.question_options (question_id, position);
@@ -643,6 +645,18 @@ returns boolean language sql stable security definer set search_path = '' as $$
       or exists (select 1 from public.test_series_tests st
                    join public.products p on p.test_series_id = st.series_id
                   where st.test_id = p_test and p.id in (select public.user_product_ids(p_user)));
+$$;
+
+-- Has the user bought anything (course / test series / bundle item) for this exam?
+-- Unlocks full practice for that exam.
+create or replace function public.has_exam_access(p_exam uuid, p_user uuid default auth.uid())
+returns boolean language sql stable security definer set search_path = '' as $$
+  select public.is_staff(p_user)
+      or exists (select 1 from public.products p
+                   left join public.courses c on c.id = p.course_id
+                   left join public.test_series ts on ts.id = p.test_series_id
+                  where p.id in (select public.user_product_ids(p_user))
+                    and coalesce(c.exam_id, ts.exam_id) = p_exam);
 $$;
 
 create or replace function public.course_visible(p_course uuid)
@@ -834,6 +848,32 @@ end $$;
 
 create trigger protect_profile before update on public.profiles
   for each row execute function public.protect_profile();
+
+-- Free/paid flags are a pricing decision: only admins may set or change them.
+-- TG_ARGV[0] = flag column name.
+create or replace function public.protect_free_flag()
+returns trigger language plpgsql security definer set search_path = '' as $$
+declare
+  v_col text := tg_argv[0];
+  v_new boolean := (to_jsonb(new) ->> v_col)::boolean;
+  v_old boolean := case when tg_op = 'UPDATE' then (to_jsonb(old) ->> v_col)::boolean else false end;
+begin
+  if v_new is distinct from v_old then
+    if auth.uid() is not null and not public.is_admin(auth.uid()) then
+      raise exception 'Only admins can change what is free (%)', v_col using errcode = '42501';
+    end if;
+    perform public._audit('free_flag.change', tg_table_name, new.id,
+      jsonb_build_object('field', v_col, 'from', v_old, 'to', v_new));
+  end if;
+  return new;
+end $$;
+
+create trigger protect_free_flag before insert or update of is_free_preview on public.lectures
+  for each row execute function public.protect_free_flag('is_free_preview');
+create trigger protect_free_flag before insert or update of is_free on public.tests
+  for each row execute function public.protect_free_flag('is_free');
+create trigger protect_free_flag before insert or update of is_free_practice on public.questions
+  for each row execute function public.protect_free_flag('is_free_practice');
 
 -- Lecture.course_id follows its chapter
 create or replace function public.lectures_set_course()
@@ -1477,6 +1517,7 @@ create or replace function public.start_practice_session(
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare
   v_user uuid := public._require_user();
+  v_paid boolean := public.has_exam_access(p_exam, v_user);
   v_ids uuid[];
   v_id uuid;
 begin
@@ -1490,6 +1531,7 @@ begin
       from public.questions q
       left join public.topics tp on tp.id = q.topic_id
      where q.exam_id = p_exam and q.status = 'published'
+       and (v_paid or q.is_free_practice)          -- non-buyers: free practice questions only
        and (p_topic_ids is null or q.topic_id = any (p_topic_ids) or tp.parent_id = any (p_topic_ids))
        and (p_difficulties is null or q.difficulty = any (p_difficulties))
        and (p_types is null or q.type = any (p_types))
@@ -1501,6 +1543,10 @@ begin
      limit least(greatest(coalesce(p_count, 10), 1), 100)) s;
 
   if v_ids is null then
+    if not v_paid then
+      raise exception 'Practice is available after you buy a course or test series for this exam'
+        using errcode = '42501';
+    end if;
     raise exception 'No questions match these filters' using errcode = 'P0002';
   end if;
 
@@ -1588,6 +1634,9 @@ begin
   end if;
 
   select * into q from public.questions where id = p_question;
+  if not (q.is_free_practice or public.has_exam_access(q.exam_id, v_user)) then
+    raise exception 'Your access to this exam has expired' using errcode = '42501';
+  end if;
   select * into k from public.question_keys where question_id = p_question;
   if q.type = 'mcq' and cardinality(p_selected_option_ids) > 1 then
     raise exception 'Only one option can be selected' using errcode = '22023';
@@ -2021,7 +2070,9 @@ select c.id as course_id,
          where l.course_id = c.id and l.status = 'published') as total_duration_seconds,
        (select count(*) from public.lectures l
          where l.course_id = c.id and l.status = 'published' and l.is_free_preview) as free_preview_count,
-       (select count(*) from public.course_tests ct where ct.course_id = c.id) as test_count
+       (select count(*) from public.course_tests ct where ct.course_id = c.id) as test_count,
+       (select count(*) from public.course_tests ct join public.tests t on t.id = ct.test_id
+         where ct.course_id = c.id and t.is_free and t.status = 'published') as free_test_count
   from public.courses c;
 
 -- Per user × course progress (students see their own rows).
@@ -2169,6 +2220,7 @@ revoke execute on function public.bundle_items_validate() from public, anon, aut
 revoke execute on function public.questions_validate() from public, anon, authenticated;
 revoke execute on function public.doubt_replies_before() from public, anon, authenticated;
 revoke execute on function public.doubt_replies_after() from public, anon, authenticated;
+revoke execute on function public.protect_free_flag() from public, anon, authenticated;
 
 -- The profile card view is read-only for signed-in users.
 revoke all on public.profile_cards from anon;

@@ -48,7 +48,11 @@ The frontend never reads questions, answer keys or other students' data directly
 | Checkout | `preview_price(product, coupon)` / `create_order(product, coupon, provider)` | student |
 | | `mark_order_paid(order, payment_id)` / `mark_order_failed(order)` | **server only** (service role) |
 | Admin | `admin_daily_activity(days)` / `admin_storage_usage()` | admin / staff |
-| Access | `has_course_access(course)` / `has_test_access(test)` / `can_watch_lecture(lecture)` | anyone |
+| Access | `has_course_access(course)` / `has_test_access(test)` / `has_exam_access(exam)` / `can_watch_lecture(lecture)` | anyone |
+
+**Free vs paid** is set by admins only: product price ₹0 (whole course/series/bundle),
+`lectures.is_free_preview`, `tests.is_free`, `questions.is_free_practice`. Practice requires buying
+something for that exam, except questions marked free.
 
 ## Testing locally
 

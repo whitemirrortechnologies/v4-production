@@ -22,6 +22,16 @@ Decisions reflected here:
 - **Validity:** set per product, either a number of days or a fixed end date (e.g. after GATE 2027),
   or lifetime.
 - **Included from day one:** coupons, bundles, lecture doubts/Q&A, question error reports.
+- **Free vs paid is decided by the admin.** Nothing is free by default:
+  - a whole course / series / bundle is free when its product price is ₹0
+  - `lectures.is_free_preview`: a single lecture anyone can watch (e.g. the first video)
+  - `tests.is_free`: a single test any signed-in user can take (e.g. the first mock)
+  - `questions.is_free_practice`: questions anyone signed in can practise
+
+  Only admins can set or change these flags (enforced by a database trigger, even for faculty),
+  and every change is written to `audit_log`.
+- **Practice is for buyers.** Buying any course, test series or bundle for an exam unlocks practice
+  on all of that exam's questions. Non-buyers can only practise questions marked `is_free_practice`.
 
 ---
 
@@ -122,7 +132,7 @@ Seeded with the official GATE CS/IT and CAT syllabi.
 | title | text | |
 | description | text null | |
 | position | int | |
-| is_free_preview | bool | watchable without buying |
+| is_free_preview | bool | **admin-only**: watchable without buying |
 | video_provider | text | `supabase` now, `r2` later |
 | video_path | text null | object key, e.g. `lecture-videos/<lecture_id>/<file>.mp4` |
 | video_status | video_status | |
@@ -236,7 +246,8 @@ Courses can also bundle tests (`course_tests`), so buying the course unlocks the
 | | | UNIQUE (user_id, product_id) |
 
 Helper SQL functions used by RLS and the app: `has_course_access(user, course)` and
-`has_test_access(user, test)`. They count direct purchases **and bundles**. A test is accessible if
+`has_test_access(user, test)` and `has_exam_access(user, exam)` (unlocks practice). They count
+direct purchases **and bundles**. A test is accessible if
 it's free, in a purchased series, or in a purchased course.
 
 ---
@@ -263,6 +274,7 @@ it's free, in a purchased series, or in a purchased course.
 | marks | numeric(4,2) | GATE 1 or 2, CAT 3 |
 | negative_marks | numeric(4,2) | GATE MCQ ⅓ or ⅔, CAT MCQ 1, MSQ/NAT/TITA 0. Pre-filled by the editor |
 | is_pyq | bool | |
+| is_free_practice | bool | **admin-only**: practisable without a purchase |
 | pyq_year | smallint null | required when is_pyq |
 | pyq_paper | text null | e.g. "GATE CS 2024 Set 1", "CAT 2023 Slot 2" |
 | status | content_status | only `published` questions go into practice and tests |
@@ -306,7 +318,7 @@ after submitting a test.
 | kind | test_kind | |
 | instructions | text | Markdown, shown before starting |
 | duration_minutes | int | overall time (GATE 180, CAT 120) |
-| is_free | bool | free tests need no purchase |
+| is_free | bool | **admin-only**: any signed-in user can take it without buying |
 | max_attempts | int null | set by admin per test. null = unlimited |
 | available_from, available_until | timestamptz null | for scheduled "live" mocks |
 | status | content_status | |

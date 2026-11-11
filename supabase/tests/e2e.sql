@@ -31,9 +31,9 @@ insert into public.courses (id, exam_id, slug, title, status)
 insert into public.course_subjects (id, course_id, title) values ('11111111-0000-0000-0000-000000000002','11111111-0000-0000-0000-000000000001','Algorithms');
 insert into public.course_modules (id, subject_id, title) values ('11111111-0000-0000-0000-000000000003','11111111-0000-0000-0000-000000000002','Graphs');
 insert into public.course_chapters (id, module_id, title) values ('11111111-0000-0000-0000-000000000004','11111111-0000-0000-0000-000000000003','Shortest Paths');
-insert into public.lectures (id, chapter_id, title, status, is_free_preview, duration_seconds, video_status, video_path) values
- ('22222222-0000-0000-0000-000000000001','11111111-0000-0000-0000-000000000004','Intro (free)','published',true,600,'ready','22222222-0000-0000-0000-000000000001/v.mp4'),
- ('22222222-0000-0000-0000-000000000002','11111111-0000-0000-0000-000000000004','Dijkstra','published',false,1000,'ready','22222222-0000-0000-0000-000000000002/v.mp4');
+insert into public.lectures (id, chapter_id, title, status, position, duration_seconds, video_status, video_path) values
+ ('22222222-0000-0000-0000-000000000001','11111111-0000-0000-0000-000000000004','Intro (free)','published',1,600,'ready','22222222-0000-0000-0000-000000000001/v.mp4'),
+ ('22222222-0000-0000-0000-000000000002','11111111-0000-0000-0000-000000000004','Dijkstra','published',2,1000,'ready','22222222-0000-0000-0000-000000000002/v.mp4');
 -- MCQ
 insert into public.questions (id, exam_id, topic_id, type, stem, marks, negative_marks, status, is_pyq, pyq_year, pyq_paper)
   select '33333333-0000-0000-0000-000000000001', e.id, t.id, 'mcq', 'Dijkstra complexity with binary heap?', 1, 0.33, 'published', true, 2023, 'GATE CS 2023'
@@ -78,7 +78,10 @@ select public.t_expect_error($q$
       select exam_id, topic_id, 'mcq', 'no key', 'published' from public.questions limit 1;
     set constraints all immediate;
   end $d$ $q$, 'without an answer key');
--- faculty can publish but not price
+-- faculty can publish but cannot decide what is free, or set prices
+select public.t_expect_error($q$ update public.lectures set is_free_preview = true where id='22222222-0000-0000-0000-000000000001' $q$, 'Only admins can change what is free');
+select public.t_expect_error($q$ update public.tests set is_free = true $q$, 'Only admins can change what is free');
+select public.t_expect_error($q$ update public.questions set is_free_practice = true $q$, 'Only admins can change what is free');
 select public.t_expect_error($q$ insert into public.products (type, course_id, price_paise) values ('course','11111111-0000-0000-0000-000000000001',100) $q$, 'row-level security');
 reset role;
 
@@ -88,9 +91,11 @@ insert into public.products (id, type, course_id, price_paise, validity_days) va
   ('66666666-0000-0000-0000-000000000001','course','11111111-0000-0000-0000-000000000001', 49900, 365);
 insert into public.coupons (code, discount_type, discount_value, max_discount_paise, max_redemptions) values ('gate50','percent',50,20000,10);
 update public.products set price_paise = 59900, sale_price_paise = 49900 where id='66666666-0000-0000-0000-000000000001';
+update public.lectures set is_free_preview = true where id='22222222-0000-0000-0000-000000000001';  -- admin marks first video free
 select public.t_expect_error($q$ update public.profiles set role='student' where id='00000000-0000-0000-0000-00000000000a' $q$, 'last admin');
 reset role;
-do $$ begin assert exists(select 1 from public.coupons where code='GATE50'), 'coupon upper'; 
+do $$ begin assert exists(select 1 from public.coupons where code='GATE50'), 'coupon upper';
+            assert exists(select 1 from public.audit_log where action='free_flag.change'), 'free flag audit'; 
             assert exists(select 1 from public.audit_log where action='product.pricing'), 'price audit'; end $$;
 
 -- ---------- student: locked out of answers & admin things ----------
@@ -108,6 +113,7 @@ select public.t_expect_error($q$ update public.profiles set role='admin' where i
 select public.t_expect_error($q$ select public.start_test_attempt('55555555-0000-0000-0000-000000000001') $q$, 'do not have access');
 select public.t_expect_error($q$ select public.save_lecture_progress('22222222-0000-0000-0000-000000000002', 10, 10) $q$, 'do not have access');
 select public.save_lecture_progress('22222222-0000-0000-0000-000000000001', 30, 30);  -- free preview ok
+select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='GATE_CS')) $q$, 'after you buy');
 select public.t_expect_error($q$ select public.mark_order_paid(gen_random_uuid()) $q$, 'permission denied');
 select public.t_expect_error($q$ insert into public.enrollments (user_id, product_id) values (auth.uid(),'66666666-0000-0000-0000-000000000001') $q$, 'row-level security');
 select public.t_expect_error($q$ insert into public.orders (user_id, product_id, list_price_paise, amount_paise) values (auth.uid(),'66666666-0000-0000-0000-000000000001',0,0) $q$, 'row-level security');
@@ -206,6 +212,18 @@ do $$ begin
   assert (select count(*) from public.test_attempts)=0, 's2 sees others attempts';
 end $$;
 select public.t_expect_error($q$ select public.admin_daily_activity() $q$, 'Admins only');
+select public.t_expect_error($q$ select public.start_practice_session((select id from public.exams where code='GATE_CS')) $q$, 'after you buy');
+reset role;
+-- admin marks one question as free practice -> non-buyers get only that one
+set role authenticated; select public.t_as('00000000-0000-0000-0000-00000000000a');
+update public.questions set is_free_practice = true where id='33333333-0000-0000-0000-000000000003';
+reset role;
+set role authenticated; select public.t_as('00000000-0000-0000-0000-000000000002');
+do $$ declare sid uuid := public.start_practice_session((select id from public.exams where code='GATE_CS'), p_count => 50);
+begin
+  assert (select question_ids from public.practice_sessions where id = sid) = '{33333333-0000-0000-0000-000000000003}', 'only free practice question';
+  assert (public.answer_practice_question(sid, '33333333-0000-0000-0000-000000000003', null, 10) ->> 'is_correct')::boolean, 'free practice answer';
+end $$;
 reset role;
 set role anon; select set_config('request.jwt.claims', '', false);
 do $$ begin
@@ -229,6 +247,7 @@ end $$;
 reset role;
 
 -- ---------- CAT-style timed sections + auto-expire ----------
+select set_config('request.jwt.claims', '', false);  -- back to SQL-editor context (no user)
 insert into public.tests (id, exam_id, slug, title, duration_minutes, status, is_free)
   select '55555555-0000-0000-0000-000000000002', id, 'cat-free-mock', 'CAT Free Mock', 120, 'published', true from public.exams where code='CAT';
 insert into public.test_sections (id, test_id, name, position, duration_minutes) values
