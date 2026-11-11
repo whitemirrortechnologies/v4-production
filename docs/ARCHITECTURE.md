@@ -1,7 +1,8 @@
 # V4 — Architecture (DRAFT for review)
 
-> Status: proposal, round 2. Decided so far: start fresh, Next.js + Supabase (Free plan), tests sold
-> both inside courses and as test series. Items marked **[DECIDE]** are still open.
+> Status: proposal, round 3. Decided: start fresh · Next.js + Supabase (Free plan, **separate
+> Supabase account** from the one connected here) · **Cloudflare R2 for video files** · tests sold
+> both inside courses and as test series · **login UI built last**.
 
 V4 is an exam-prep platform for **GATE (CS/IT)** and **CAT**: students learn (video courses),
 practice (topic-wise questions) and test (full-length mocks). Admins and faculty manage all content
@@ -16,7 +17,7 @@ and can see how it's being used.
 | Web app | **Next.js 15 (App Router) + TypeScript** | One codebase for the public site, the student app and the admin panel. Server components keep secrets and answer keys on the server. |
 | UI | **Tailwind CSS + shadcn/ui**, **KaTeX** for math | Fast, consistent UI. GATE/CAT questions need formulas. |
 | Database / Auth / Files | **Supabase** (Postgres 17, Auth, Storage, Row-Level Security), region **ap-south-1 (Mumbai)** | You already use Supabase. Low latency for Indian students. RLS enforces access control inside the DB itself. |
-| Video **[DECIDE]** | `VideoStorage` adapter: **Supabase Storage** (dev/demo) → **Cloudflare R2** (free, recommended for real use) → Bunny Stream later | Supabase Free can't hold real course video (see §1.1). The adapter lets us swap where files live without touching the rest of the app. |
+| Video | **Cloudflare R2** via a `VideoStorage` adapter (Bunny Stream etc. can be added later) | Supabase Free can't hold real course video (see §1.1). The adapter lets us swap where files live without touching the rest of the app. |
 | Payments | `PaymentProvider` interface: **DemoProvider** now, **Razorpay** later | Turning on real payments later only means writing one new class, not touching business logic. |
 | Hosting | **Vercel** for development and previews. For the paid launch, Vercel Pro or Cloudflare (Workers via OpenNext) | Vercel's free Hobby plan doesn't allow commercial use, and selling courses is commercial. |
 | Validation | **Zod** shared by forms and server actions | One schema validates both the browser and the server. |
@@ -48,7 +49,7 @@ Limits as of Nov 2026 (from Supabase docs):
 | Max file size | **50 MB per file** | ≈ 15–20 min of 720p video per lecture, unless split. |
 | Bandwidth | **5 GB uncached + 5 GB cached / month**, shared by DB, auth and storage | ≈ 30–60 student-hours of video watching **per month for everyone combined**. |
 | Inactivity | Projects pause after ~1 week with no activity. No backups. | Fine during development. Needs a plan before launch. |
-| Projects | 2 free projects per org (you're using 1: Amritacanteen) | V4 takes the second slot. |
+| Projects | 2 free projects per org (you're using 1: Amritacanteen) | N/A: V4 uses a separate Supabase account. |
 
 **Conclusion:** Supabase Free handles everything except video. For video:
 
@@ -62,6 +63,34 @@ Limits as of Nov 2026 (from Supabase docs):
 The code goes through one `VideoStorage` interface (`createUpload`, `getPlaybackUrl`, `delete`),
 so the app starts on A or B and can move to D later by adding an adapter and migrating files.
 The upload flow (§4.1) is the same for each: signed URL → direct browser upload with progress.
+
+### 1.2 Where data lives: one database + one file store
+
+V4 has **one database** (Supabase Postgres) and **one bucket for big files** (Cloudflare R2).
+R2 isn't a second database. It only holds the video bytes:
+
+```
+Supabase Postgres  (source of truth)            Cloudflare R2  (bucket: v4-videos, private)
+lecture: id, title, duration_s, size_bytes,  ─► lectures/<lecture_id>/<upload_id>.mp4
+         video_key, video_status, ...
+Supabase Storage (small public/private files): thumbnails, notes PDFs, question images
+```
+
+- Every check (is this user enrolled? is the video ready?) runs against Postgres. R2 never decides
+  who gets access. It only serves a file when the server hands out a presigned URL that expires.
+- **Scaling:** Postgres scales by upgrading the Supabase plan (or moving to any other Postgres,
+  since it's standard SQL migrations). R2 has no egress fees and no practical size cap, and past the
+  10 GB free tier it costs about $0.015/GB-month. Moving to a streaming host later means copying
+  files and changing one adapter, with no changes to the app.
+
+### 1.3 Login comes last: how we build without it
+
+The final login screens and methods are built in the last milestone. Until then:
+- The schema still uses Supabase Auth users (`auth.users` → `profiles`), so nothing changes later.
+- Seed creates demo accounts (`admin@`, `faculty@`, `student@`), and a **dev-only "act as" switcher**
+  signs in as them in one click. It's switched on only when `NEXT_PUBLIC_DEV_LOGIN=true` and is
+  refused at build time in production.
+- RLS policies and role checks are real from day one, so security isn't bolted on at the end.
 
 ---
 
@@ -253,24 +282,24 @@ Implemented as SQL views / materialized views refreshed by `pg_cron`.
 
 | # | Milestone | Result you can try |
 |---|---|---|
-| M0 | Scaffold: Next.js, Supabase project, auth, roles, CI, deploy | Sign up, log in, admin can promote users |
+| M0 | Scaffold: Next.js, local Supabase, schema/RLS base, R2 adapter, dev "act as" switcher, CI | App runs, switch between admin/faculty/student |
 | M1 | Catalog + curriculum editor | Admin builds a course tree. Students browse with real counts |
 | M2 | Video upload + player + resume | Admin uploads, student watches and resumes |
 | M3 | Demo checkout + enrollment gating | Buy → access unlocks |
 | M4 | Question bank + practice | Admin authors MCQ/MSQ/NAT/TITA + PYQs. Students practice |
 | M5 | Test builder + exam engine + results/analysis | Full GATE and CAT mocks |
 | M6 | Student dashboard + admin analytics | Progress and usage views |
-| M7 | Hardening: Razorpay, Playwright E2E, perf, a11y | Production-ready |
+| M7 | **Real login** (methods TBD), Razorpay, Playwright E2E, perf, a11y | Production-ready |
 
 ---
 
 ## 9. Open decisions
 
 1. ~~Existing v4 repo~~: **decided**, start fresh.
-2. **Video storage on a ₹0 budget**: A (Supabase only, demo) / **B (Cloudflare R2, recommended)** /
-   C (YouTube unlisted). See §1.1.
-3. ~~Supabase project~~: **decided**, new dedicated free project (second free slot).
-4. **Login methods**: email+password, email OTP, Google, phone OTP?
+2. ~~Video storage~~: **decided**, Cloudflare R2.
+3. ~~Supabase project~~: **decided**, a project in your separate Supabase account. Development
+   uses a local Supabase (Docker), and migrations are applied to your project when it's ready.
+4. **Login methods**: deferred to M7.
 5. **Faculty powers**: can faculty publish and set prices, or only author drafts for admin approval?
 6. ~~Test access~~: **decided**, both. Courses can bundle tests, and test series are sold on
    their own. (`product` = course | test_series; enrollments point at products.)
