@@ -1,14 +1,15 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Badge, Button, Card, Input, Notice, PageHeader, Select } from "@/components/ui";
+import { Badge, Button, Card, Input, PageHeader, Select } from "@/components/ui";
+import { ActionForm, Submit } from "@/components/forms";
 import { updateUser } from "./actions";
 import type { Profile } from "@/lib/types";
 
 export const metadata = { title: "Users · Admin" };
 
-export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string; error?: string }> }) {
+export default async function UsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { profile: me } = await requireAdmin("/admin/users");
-  const { q, error } = await searchParams;
+  const { q } = await searchParams;
   const supabase = await createClient();
   let query = supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(100);
   const term = q?.replace(/[%,()]/g, "").trim();
@@ -18,8 +19,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageHeader title="Users" subtitle="Promote students to faculty or admin, or suspend an account." />
-      {error && <div className="mb-6"><Notice tone="error">{error}</Notice></div>}
+      <PageHeader eyebrow="People" title="Users" subtitle="Promote students to faculty or admin, or suspend an account." />
       <form className="mb-6 flex max-w-md gap-2">
         <Input name="q" defaultValue={q} placeholder="Search name or email…" />
         <Button type="submit" variant="secondary">Search</Button>
@@ -27,7 +27,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
       <div className="space-y-2">
         {users.map((u) => (
           <Card key={u.id} className="cv-auto p-4">
-            <form action={updateUser} className="flex flex-wrap items-center gap-3">
+            <ActionForm action={updateUser} className="flex flex-wrap items-center gap-3">
               <input type="hidden" name="id" value={u.id} />
               <div className="min-w-0 flex-1 basis-56">
                 <p className="truncate font-medium">{u.full_name || "—"} {u.id === me.id && <Badge tone="violet">you</Badge>}</p>
@@ -37,8 +37,8 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                 <option value="student">Student</option><option value="faculty">Faculty</option><option value="admin">Admin</option>
               </Select>
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_blocked" defaultChecked={u.is_blocked} className="size-4 accent-violet-600" />Suspended</label>
-              <Button size="sm" variant="secondary" type="submit">Save</Button>
-            </form>
+              <Submit size="sm" variant="secondary">Save</Submit>
+            </ActionForm>
           </Card>
         ))}
         {!users.length && <p className="text-ink-3">No users found.</p>}

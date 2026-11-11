@@ -3,6 +3,7 @@ import "@fontsource-variable/inter";
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import { env } from "@/lib/env";
+import { Toaster } from "@/components/toaster";
 
 export const metadata: Metadata = {
   title: { default: `${env.siteName} — Learn. Practice. Test.`, template: `%s · ${env.siteName}` },
@@ -17,7 +18,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

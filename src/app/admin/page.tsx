@@ -1,4 +1,4 @@
-import { Card, PageHeader } from "@/components/ui";
+import { LinkButton, PageHeader } from "@/components/ui";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { bytes, rupees } from "@/lib/format";
@@ -25,43 +25,50 @@ export default async function AdminHome() {
   const maxActive = Math.max(1, ...(activity as { active_users: number }[]).map((d) => Number(d.active_users)));
 
   const stat = (label: string, value: string | number) => (
-    <Card className="p-5"><p className="text-sm text-ink-3">{label}</p><p className="mt-1 text-3xl font-semibold tracking-tight">{value}</p></Card>
+    <div className="rounded-2xl border border-line bg-paper p-5"><p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">{label}</p><p className="mt-2 font-display text-3xl font-bold tracking-tight">{value}</p></div>
   );
+  const days = activity as { day: string; active_users: number }[];
   return (
     <>
-      <PageHeader title="Overview" subtitle={`Welcome back${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}.`} />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <PageHeader eyebrow={`${profile.role} console`} title="Overview" subtitle={`Welcome back${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}. Here's how V4 is doing.`}
+        action={<div className="flex gap-2"><LinkButton href="/admin/courses" variant="outline" size="sm">Courses</LinkButton><LinkButton href="/admin/syllabus" size="sm">Syllabus</LinkButton></div>} />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         {isAdmin && stat("Students", students)}
         {stat("Courses", courses)}
         {stat("Lectures", lectures)}
         {stat("Questions", questions)}
         {stat("Tests", tests)}
-        {isAdmin && stat("Revenue (14 days)", rupees(revenue) === "Free" ? "₹0" : rupees(revenue))}
+        {isAdmin && stat("Revenue · 14d", revenue ? rupees(revenue) : "₹0")}
       </div>
 
       {isAdmin && (
-        <Card className="mt-6 p-6">
-          <p className="font-medium">Daily active students · last 14 days</p>
-          <div className="mt-5 flex h-32 items-end gap-1.5" role="img" aria-label="Daily active students">
-            {(activity as { day: string; active_users: number }[]).map((d) => (
-              <div key={d.day} className="flex flex-1 flex-col items-center gap-1" title={`${d.day}: ${d.active_users}`}>
-                <div className="w-full rounded-t-md bg-violet-500" style={{ height: `${Math.max(4, (Number(d.active_users) / maxActive) * 100)}%` }} />
+        <div className="mt-6 rounded-2xl border border-line bg-paper p-6">
+          <div className="flex items-baseline justify-between"><p className="font-semibold">Daily active students</p><p className="text-sm text-ink-3">Last 14 days</p></div>
+          <div className="mt-6 flex h-40 items-stretch gap-1.5 sm:gap-2" role="img" aria-label="Daily active students, last 14 days">
+            {days.map((d) => (
+              <div key={d.day} className="group relative flex h-full flex-1 flex-col justify-end">
+                <span className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 rounded-md bg-ink px-1.5 py-0.5 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">{d.active_users}</span>
+                <div className="w-full rounded-t-md bg-violet-500/85 transition-colors group-hover:bg-violet-600" style={{ height: `${Math.max(3, (Number(d.active_users) / maxActive) * 100)}%` }} />
               </div>
             ))}
           </div>
-        </Card>
+          <div className="mt-2 flex justify-between text-[11px] text-ink-4">
+            <span>{days[0] && new Date(days[0].day).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+            <span>{days.at(-1) && new Date(days.at(-1)!.day).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+          </div>
+        </div>
       )}
 
-      <Card className="mt-6 p-6">
+      <div className="mt-6 rounded-2xl border border-line bg-paper p-6">
         <div className="flex items-baseline justify-between">
-          <p className="font-medium">Storage (Supabase free plan)</p>
-          <p className="text-sm text-ink-3">{bytes(used)} of {bytes(FREE_PLAN_BYTES)}</p>
+          <p className="font-semibold">Storage</p>
+          <p className="text-sm text-ink-3">{bytes(used)} of {bytes(FREE_PLAN_BYTES)} (Supabase free plan)</p>
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-wash">
           <div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, (used / FREE_PLAN_BYTES) * 100)}%` }} />
         </div>
-        <p className="mt-2 text-xs text-ink-3">Each video can be up to 50 MB on the free plan.</p>
-      </Card>
+        <p className="mt-2 text-xs text-ink-3">Each video can be up to 50 MB on the free plan. Upgrade to Supabase Pro for 100 GB.</p>
+      </div>
     </>
   );
 }

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { SiteHeader } from "@/components/site-header";
 import { Button, Card, LinkButton, Notice } from "@/components/ui";
 import { rupees } from "@/lib/format";
+import { IconCheck } from "@/components/icons";
 import { settleDemoPayment } from "../../actions";
 
 export const metadata = { title: "Payment" };
@@ -28,7 +29,7 @@ export default async function PayPage({ params, searchParams }: {
       <main className="mx-auto max-w-md px-5 py-16 text-center">
         {order.status === "paid" ? (
           <Card className="rise p-8">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-good/10 text-2xl text-good">✓</div>
+            <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-good/10 text-good"><IconCheck size={26} /></div>
             <h1 className="mt-5 text-2xl font-semibold tracking-tight">You&apos;re in</h1>
             <p className="mt-2 text-ink-3">{course ? `You now have access to ${course.title}.` : "Your purchase is complete."}</p>
             <div className="mt-6 flex flex-col gap-2">

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Course, CourseStats, Exam, Product } from "@/lib/types";
+import { loadTree } from "@/lib/tree";
 
 export type CatalogCourse = Course & { exam: Pick<Exam, "code" | "name">; stats: CourseStats | null; product: Product | null };
 
@@ -59,32 +60,11 @@ export type CurriculumTree = {
   modules: { id: string; title: string; chapters: { id: string; title: string; lectures: CurriculumLecture[] }[] }[];
 }[];
 
-/** Full subject → module → chapter → lecture tree for a course (4 queries, assembled in memory). */
+/** Full subject → module → chapter → lecture tree for a course. */
 export const getCurriculum = cache(async (courseId: string): Promise<CurriculumTree> => {
   const supabase = await createClient();
-  const { data: subjects } = await supabase.from("course_subjects").select("id,title,position").eq("course_id", courseId).order("position");
-  const subjectIds = (subjects ?? []).map((s) => s.id);
-  if (!subjectIds.length) return [];
-  const { data: modules } = await supabase.from("course_modules").select("id,title,position,subject_id").in("subject_id", subjectIds).order("position");
-  const moduleIds = (modules ?? []).map((m) => m.id);
-  const { data: chapters } = moduleIds.length
-    ? await supabase.from("course_chapters").select("id,title,position,module_id").in("module_id", moduleIds).order("position")
-    : { data: [] };
-  const { data: lectures } = await supabase
-    .from("lectures")
-    .select("id,title,position,is_free_preview,duration_seconds,video_status,status,chapter_id")
-    .eq("course_id", courseId)
-    .order("position");
-  return (subjects ?? []).map((s) => ({
-    id: s.id, title: s.title,
-    modules: (modules ?? []).filter((m) => m.subject_id === s.id).map((m) => ({
-      id: m.id, title: m.title,
-      chapters: (chapters ?? []).filter((c) => c.module_id === m.id).map((c) => ({
-        id: c.id, title: c.title,
-        lectures: (lectures ?? []).filter((l) => l.chapter_id === c.id) as CurriculumLecture[],
-      })),
-    })),
-  }));
+  const tree = await loadTree(supabase, courseId, "id,title,position,is_free_preview,duration_seconds,video_status,status,chapter_id");
+  return tree as unknown as CurriculumTree;
 });
 
 export type ExamSummary = Exam & { courses: number; sections: number; tests: number };

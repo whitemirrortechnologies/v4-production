@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge, Card, Eyebrow, LinkButton } from "@/components/ui";
+import { IconChevron, IconLock, IconPlay, IconCheck } from "@/components/icons";
 import { getCourseBySlug, getCurriculum, priceOf } from "@/lib/catalog";
 import { getViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -55,9 +56,9 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               ) : null}
             </div>
             <ul className="mt-5 space-y-2.5 text-sm text-ink-2">
-              <li className="flex gap-2"><span className="text-violet-600">✓</span>All lectures, notes and course tests</li>
-              <li className="flex gap-2"><span className="text-violet-600">✓</span>Topic-wise practice for {course.exam.name}</li>
-              {(course.stats?.free_preview_count ?? 0) > 0 && <li className="flex gap-2"><span className="text-violet-600">✓</span>{course.stats!.free_preview_count} free preview lecture(s)</li>}
+              <li className="flex items-center gap-2"><IconCheck size={15} className="text-violet-600" />All lectures, notes and course tests</li>
+              <li className="flex items-center gap-2"><IconCheck size={15} className="text-violet-600" />Topic-wise practice for {course.exam.name}</li>
+              {(course.stats?.free_preview_count ?? 0) > 0 && <li className="flex items-center gap-2"><IconCheck size={15} className="text-violet-600" />{course.stats!.free_preview_count} free preview lecture(s)</li>}
             </ul>
           </Card>
         </div>
@@ -75,8 +76,8 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               <div className="space-y-3">
                 {s.modules.map((m) => (
                   <details key={m.id} className="group rounded-2xl border border-line" open={tree.length === 1 && s.modules.length === 1}>
-                    <summary className="cursor-pointer list-none px-5 py-4 font-medium marker:hidden">
-                      <span className="mr-2 inline-block text-ink-3 transition-transform group-open:rotate-90">›</span>{m.title}
+                    <summary className="flex cursor-pointer items-center px-5 py-4 font-semibold">
+                      <IconChevron size={15} className="mr-2 inline-block text-ink-4 transition-transform group-open:rotate-90" />{m.title}
                     </summary>
                     <div className="border-t border-line px-5 py-3">
                       {m.chapters.map((c) => (
@@ -86,7 +87,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                             {c.lectures.filter(published).map((l) => (
                               <li key={l.id} className="cv-auto flex items-center justify-between gap-3 border-b border-line/60 py-2.5 text-sm last:border-0">
                                 <span className="flex items-center gap-2">
-                                  <span aria-hidden className="text-ink-3">{enrolled || l.is_free_preview ? "▶" : "🔒"}</span>
+                                  <span className="text-ink-4">{enrolled || l.is_free_preview ? <IconPlay size={13} className="text-violet-600" /> : <IconLock size={14} />}</span>
                                   {enrolled || l.is_free_preview ? (
                                     <a className="hover:underline" href={`/app/learn/${course.slug}/${l.id}`}>{l.title}</a>
                                   ) : l.title}

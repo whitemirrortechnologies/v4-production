@@ -1,12 +1,5 @@
 import "server-only";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-
-/** Redirect back to `path` showing an error banner. */
-export function fail(path: string, message: string): never {
-  const sep = path.includes("?") ? "&" : "?";
-  redirect(`${path}${sep}error=${encodeURIComponent(message)}`);
-}
 
 /** Turn a Postgres/PostgREST error into something a person can read. */
 export function dbMessage(e: { code?: string; message: string }): string {
@@ -17,3 +10,4 @@ export function dbMessage(e: { code?: string; message: string }): string {
 }
 
 export const refresh = (...paths: string[]) => paths.forEach((p) => revalidatePath(p));
+export const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
