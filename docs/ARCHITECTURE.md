@@ -101,7 +101,8 @@ The final login screens and methods are built in the last milestone. Until then:
 |---|:-:|:-:|:-:|
 | Browse catalog, buy, learn, practice, test | ✅ | ✅ | ✅ |
 | Create/edit curriculum, upload videos, write questions, build tests | – | ✅ | ✅ |
-| Publish courses, set prices | – | **[DECIDE]** | ✅ |
+| Publish content | – | ✅ | ✅ |
+| Set prices, coupons, bundles; manage orders & enrollments | – | – | ✅ |
 | Manage users, change roles | – | – | ✅ |
 | Analytics | – | own content | all |
 
@@ -301,6 +302,6 @@ Implemented as SQL views / materialized views refreshed by `pg_cron`.
 3. ~~Supabase project~~: **decided**, a project in your separate Supabase account. Development
    uses a local Supabase (Docker), and migrations are applied to your project when it's ready.
 4. **Login methods**: deferred to M7.
-5. **Faculty powers**: can faculty publish and set prices, or only author drafts for admin approval?
+5. ~~Faculty powers~~: **decided**, full content control including publishing. Prices and users are admin-only.
 6. ~~Test access~~: **decided**, both. Courses can bundle tests, and test series are sold on
    their own. (`product` = course | test_series; enrollments point at products.)
