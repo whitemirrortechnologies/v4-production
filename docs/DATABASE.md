@@ -1,4 +1,6 @@
-# V4 — Database design (Supabase Postgres) — DRAFT v2
+# V4 — Database design (Supabase Postgres) — v2
+
+> SQL: [`supabase/migrations/20261111000000_init.sql`](../supabase/migrations/20261111000000_init.sql) · how to run: [`supabase/README.md`](../supabase/README.md)
 
 Everything lives in **one Supabase project**: Postgres tables, Auth users and Storage files
 (including lecture videos for now). Each lecture records `video_provider`, so videos can move to
@@ -372,10 +374,11 @@ attempts past their `deadline_at`, even if the student closed the tab.
 | user_id | uuid → profiles | |
 | exam_id | uuid → exams | |
 | filters | jsonb | `{topic_ids, difficulty, pyq_only, years}` |
+| question_ids | uuid[] | questions chosen for this session, in order |
 | is_timed | bool | |
 | time_limit_seconds | int null | |
 | started_at, ended_at | timestamptz | |
-| question_count, correct_count | int | |
+| question_count, answered_count, correct_count | int | |
 
 ### `practice_answers`
 | Column | Type | Notes |
@@ -456,9 +459,9 @@ Visible to students enrolled in the course (shared, like a class forum).
 |---|---|
 | `course_stats` | per course: subjects, lectures, total video minutes, free-preview count, linked tests |
 | `course_progress` | per user × course: % lectures completed, last watched lecture |
-| `test_leaderboard` | ranks/percentiles per test (first attempts) |
+| `profile_cards` | name, avatar and role only (for doubt threads and leaderboards) |
 | `question_stats` | attempts, % correct, avg time per question (flags too-easy or too-hard questions) |
-| `admin_daily_activity` | daily active users, signups, enrollments, revenue, watch-minutes |
+
 
 ---
 
@@ -494,4 +497,5 @@ exams ─┬─ syllabus_sections ── topics ◄─────────�
      lectures ── lecture_doubts ── doubt_replies          questions ── question_reports
 ```
 
-**Total: 37 tables + 5 views.**
+**Total: 37 tables + 4 views.** Leaderboard, admin daily activity and storage usage are
+functions (`get_test_leaderboard`, `admin_daily_activity`, `admin_storage_usage`).
