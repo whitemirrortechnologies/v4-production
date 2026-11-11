@@ -3,6 +3,7 @@
 > Status: proposal, round 3. Decided: start fresh · Next.js + Supabase (Free plan, **separate
 > Supabase account** from the one connected here) · **Cloudflare R2 for video files** · tests sold
 > both inside courses and as test series · **login UI built last**.
+> R2 setup guide: [docs/setup/cloudflare-r2.md](setup/cloudflare-r2.md).
 
 V4 is an exam-prep platform for **GATE (CS/IT)** and **CAT**: students learn (video courses),
 practice (topic-wise questions) and test (full-length mocks). Admins and faculty manage all content
@@ -56,7 +57,7 @@ Limits as of Nov 2026 (from Supabase docs):
 | Option | Cost | Storage / bandwidth | Trade-off |
 |---|---|---|---|
 | A. Supabase Storage only | ₹0 | 1 GB / ~10 GB per month | Only good for a demo with a few short clips. |
-| **B. Cloudflare R2 + Supabase (recommended)** | **₹0** within 10 GB storage; **egress is always free** | 10 GB storage (~30–60 h of video), unlimited bandwidth | Needs a free Cloudflare account (card on file). No automatic transcoding, so we serve web-optimised MP4 with seeking (fine for lectures). |
+| **B. Cloudflare R2 + Supabase (recommended)** | **₹0** within 10 GB storage; **egress is always free** | 10 GB storage (~20 h at 720p, more at lower bitrates), unlimited bandwidth | Needs a free Cloudflare account (card on file). No automatic transcoding, so we serve web-optimised MP4 with seeking (fine for lectures). |
 | C. YouTube unlisted, uploaded from the admin panel | ₹0 | Unlimited | YouTube branding/player, unlisted links can be shared, API upload quota (~6 uploads/day). |
 | D. Bunny Stream | ~$1/month minimum + ~$0.01/GB | Unlimited, with HLS transcoding | Best experience, not free. |
 
