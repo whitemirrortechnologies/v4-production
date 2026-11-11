@@ -41,6 +41,6 @@ npm run dev
 | Student: dashboard, video player with resume, practice with solutions, exam screen, results | ✅ |
 | Demo checkout with coupons | ✅ (Razorpay later) |
 
-**Existing database with GATE data?** Run [supabase/manual/remove-gate.sql](supabase/manual/remove-gate.sql) to hide it, or [supabase/manual/delete-gate.sql](supabase/manual/delete-gate.sql) to delete it permanently.
+**Existing database with GATE data?** Sign in as admin → **Admin → Exams → GATE → Delete permanently…** (type the code to confirm). Prefer SQL? Run [supabase/manual/delete-gate.sql](supabase/manual/delete-gate.sql).
 
 **Before launch:** see [docs/LAUNCH_TODO.md](docs/LAUNCH_TODO.md).

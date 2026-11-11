@@ -1,9 +1,11 @@
 "use server";
 
-import { requireStaff } from "@/lib/auth";
+import { requireAdmin, requireStaff } from "@/lib/auth";
+import { createServiceClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { dbMessage, refresh, str } from "@/lib/action";
 import { slugify } from "@/lib/format";
+import { deleteExamCascade } from "@/lib/delete-exam";
 import { EXAM_PRESETS } from "@/lib/exam-presets";
 import type { Result } from "@/lib/result";
 
@@ -63,15 +65,32 @@ export async function setExamVisible(f: FormData): Promise<Result> {
   return { ok: on ? "Exam is now visible to students" : "Exam hidden from students" };
 }
 
-/** Delete an exam. Allowed only when nothing is attached to it. */
-export async function deleteExam(f: FormData): Promise<Result> {
-  await requireStaff();
-  const supabase = await createClient();
+/**
+ * PERMANENTLY delete an exam and everything under it: courses (with lectures, progress, doubts),
+ * lecture videos and notes in Storage, questions, passages, tests (with attempts), test series,
+ * the orders/enrollments for its courses and series, and its syllabus. Admin only.
+ *
+ * Runs with the service role because orders can't be deleted through normal row-level security.
+ * Steps are ordered so database foreign keys never block, and the action can safely be run again
+ * if a step fails part-way.
+ */
+export async function deleteExamAndContent(f: FormData): Promise<Result> {
+  await requireAdmin("/admin/exams");
   const id = str(f, "id");
-  const counts = await Promise.all(["courses", "questions", "tests", "test_series"].map(async (t) => (await supabase.from(t).select("*", { count: "exact", head: true }).eq("exam_id", id)).count ?? 0));
-  if (counts.some((n) => n > 0)) return { error: "This exam still has courses, questions or tests. Hide it instead, or remove its content first." };
-  const { error } = await supabase.from("exams").delete().eq("id", id);
-  if (error) return { error: dbMessage(error) };
+  let db: ReturnType<typeof createServiceClient>;
+  try { db = createServiceClient(); }
+  catch { return { error: "SUPABASE_SERVICE_ROLE_KEY is missing in Vercel, so full deletion isn't available. Add it (Secret), redeploy, and try again." }; }
+
+  const { data: exam } = await db.from("exams").select("id,code,name").eq("id", id).maybeSingle();
+  if (!exam) return { error: "That exam no longer exists." };
+  if (str(f, "confirm").toUpperCase() !== exam.code.toUpperCase()) return { error: `Type ${exam.code} exactly to confirm.` };
+
+  try {
+    await deleteExamCascade(db, id);
+  } catch (e) {
+    done();
+    return { error: `Stopped part-way (${(e as Error).message}). Nothing is lost by trying again: the delete picks up where it stopped.` };
+  }
   done();
-  return { ok: "Exam deleted" };
+  return { ok: `${exam.name} and everything in it was deleted.` };
 }

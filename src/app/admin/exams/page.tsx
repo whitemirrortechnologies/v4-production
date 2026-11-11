@@ -1,16 +1,17 @@
-import { requireStaff } from "@/lib/auth";
+import { getViewer, requireStaff } from "@/lib/auth";
+import { DeleteExam } from "@/components/delete-exam";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, Card, Input, Label, PageHeader } from "@/components/ui";
-import { ActionForm, IconSubmit, Submit } from "@/components/forms";
-import { IconTrash } from "@/components/icons";
+import { ActionForm, Submit } from "@/components/forms";
 import { EXAM_PRESETS } from "@/lib/exam-presets";
 import type { Exam } from "@/lib/types";
-import { addExam, deleteExam, setExamVisible } from "./actions";
+import { addExam, setExamVisible } from "./actions";
 
 export const metadata = { title: "Exams · Admin" };
 
 export default async function ExamsAdmin() {
   await requireStaff("/admin/exams");
+  const isAdmin = (await getViewer())?.profile.role === "admin";
   const supabase = await createClient();
   const { data } = await supabase.from("exams").select("*").order("position");
   const exams = (data ?? []) as Exam[];
@@ -44,9 +45,7 @@ export default async function ExamsAdmin() {
                     <input type="hidden" name="id" value={e.id} /><input type="hidden" name="visible" value={e.is_active ? "0" : "1"} />
                     <Submit size="sm" variant={e.is_active ? "outline" : "violet"}>{e.is_active ? "Hide from students" : "Show to students"}</Submit>
                   </ActionForm>
-                  <ActionForm action={deleteExam} confirm={`Delete "${e.name}" and its syllabus? Only possible when it has no courses, questions or tests.`}>
-                    <input type="hidden" name="id" value={e.id} /><IconSubmit label="Delete exam" danger><IconTrash size={15} /></IconSubmit>
-                  </ActionForm>
+                  {isAdmin && <DeleteExam id={e.id} code={e.code} name={e.name} counts={s} />}
                 </div>
               );
             })}

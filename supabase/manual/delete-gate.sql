@@ -1,6 +1,6 @@
 -- =============================================================================
 -- PERMANENTLY delete GATE and everything under it from an existing V4 database.
--- THIS CANNOT BE UNDONE. Prefer remove-gate.sql (hides it) unless you are sure.
+-- THIS CANNOT BE UNDONE. To only hide GATE instead, use Admin → Exams → Hide from students.
 -- Run in Supabase → SQL Editor. Runs in one transaction: any error rolls it all back.
 --
 -- Deletes: GATE exam, its syllabus sections/topics, courses (+ subjects, modules, chapters,
