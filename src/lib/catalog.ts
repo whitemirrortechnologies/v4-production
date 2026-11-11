@@ -86,3 +86,24 @@ export const getCurriculum = cache(async (courseId: string): Promise<CurriculumT
     })),
   }));
 });
+
+export type ExamSummary = Exam & { courses: number; sections: number; tests: number };
+
+/** Real per-exam counts for the home page cards. */
+export const getExamSummaries = cache(async (): Promise<ExamSummary[]> => {
+  const supabase = await createClient();
+  const exams = await getExams();
+  return Promise.all(
+    exams.map(async (e) => {
+      const count = async (table: string, extra: Record<string, string>) => {
+        let q = supabase.from(table).select("*", { count: "exact", head: true }).eq("exam_id", e.id);
+        for (const [k, v] of Object.entries(extra)) q = q.eq(k, v);
+        return (await q).count ?? 0;
+      };
+      const [courses, sections, tests] = await Promise.all([
+        count("courses", { status: "published" }), count("syllabus_sections", {}), count("tests", { status: "published" }),
+      ]);
+      return { ...e, courses, sections, tests };
+    }),
+  );
+});

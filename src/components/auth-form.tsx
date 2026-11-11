@@ -22,14 +22,14 @@ export function AuthForm({
       </label>
       {state?.error && <Notice tone="error">{state.error}</Notice>}
       {state?.message && <Notice tone="success">{state.message}</Notice>}
-      <Button type="submit" size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className="mt-2 w-full" disabled={pending}>
         {pending ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
       </Button>
       <p className="text-center text-sm text-ink-3">
         {mode === "login" ? (
-          <>New here? <Link className="font-medium text-ink underline" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</Link></>
+          <>New here? <Link className="font-semibold text-violet-600 hover:underline" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</Link></>
         ) : (
-          <>Already have an account? <Link className="font-medium text-ink underline" href={`/login?next=${encodeURIComponent(next)}`}>Sign in</Link></>
+          <>Already have an account? <Link className="font-semibold text-violet-600 hover:underline" href={`/login?next=${encodeURIComponent(next)}`}>Sign in</Link></>
         )}
       </p>
     </form>

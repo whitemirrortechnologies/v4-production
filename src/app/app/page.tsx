@@ -34,18 +34,18 @@ export default async function Dashboard() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-5 py-12">
-        <PageHeader title={`Hello${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}`} subtitle="Pick up where you left off." />
+      <main id="main" className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
+        <PageHeader eyebrow="Dashboard" title={`Hello${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}`} subtitle="Pick up where you left off." />
 
         <div className="grid gap-3 sm:grid-cols-3">
           {[["Courses", "/courses", "Browse everything"]].map(([t, href, d]) => (
-            <Link key={t} href={href} className="rounded-[var(--radius-card)] bg-wash p-5 transition-colors hover:bg-line">
+            <Link key={t} href={href} className="rounded-2xl bg-wash p-5 transition-colors hover:bg-line">
               <p className="font-semibold">{t}</p><p className="text-sm text-ink-3">{d}</p>
             </Link>
           ))}
         </div>
 
-        <h2 className="mb-5 mt-12 text-2xl font-semibold tracking-tight">My courses</h2>
+        <h2 className="h2 mb-6 mt-14">My courses</h2>
         {mine.length ? (
           <div className="grid gap-4 md:grid-cols-2">
             {mine.map(({ course, expires }) => {
@@ -71,7 +71,7 @@ export default async function Dashboard() {
 
         {others.length > 0 && (
           <>
-            <h2 className="mb-5 mt-14 text-2xl font-semibold tracking-tight">Explore more</h2>
+            <h2 className="h2 mb-6 mt-16">Explore more</h2>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{others.map((c) => <CourseCard key={c.id} course={c} />)}</div>
           </>
         )}

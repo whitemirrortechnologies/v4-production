@@ -46,9 +46,9 @@ export default async function LearnPage({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-paper/95 px-4">
-        <Link href="/app" className="rounded-full px-3 py-1.5 text-sm text-ink-2 hover:bg-wash">← Dashboard</Link>
-        <p className="min-w-0 flex-1 truncate text-sm font-medium">{course.title}</p>
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-night-line bg-night px-4 text-white">
+        <Link href="/app" className="rounded-lg px-3 py-1.5 text-sm text-night-ink hover:bg-white/10 hover:text-white">← Dashboard</Link>
+        <p className="min-w-0 flex-1 truncate text-sm font-semibold">{course.title}</p>
       </header>
 
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-6 lg:grid-cols-[1fr_22rem]">
@@ -62,16 +62,16 @@ export default async function LearnPage({ params }: { params: Promise<{ slug: st
                   {detail?.video_status === "ready" ? "Video unavailable right now" : "The video for this lecture isn't uploaded yet"}
                 </div>
               )}
-              <h1 className="mt-6 text-2xl font-semibold tracking-tight">{current.title}</h1>
+              <h1 className="mt-6 font-display text-2xl font-bold tracking-tight">{current.title}</h1>
               <p className="mt-1 text-sm text-ink-3">{current.chapter}</p>
               {detail?.description && <p className="mt-4 max-w-2xl whitespace-pre-line text-ink-2">{detail.description}</p>}
             </>
           ) : current ? (
-            <Card className="glow-violet flex flex-col items-center px-6 py-16 text-center">
-              <div className="text-4xl">🔒</div>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight">{current.title}</h1>
-              <p className="mt-2 max-w-sm text-ink-3">This lecture is part of the full course. Enroll to unlock every lecture, practice and test.</p>
-              {course.product && <LinkButton href={`/checkout/${course.product.id}`} variant="violet" size="lg" className="mt-6">Enroll now</LinkButton>}
+            <Card className="on-night relative flex flex-col items-center overflow-hidden border-night-line bg-night px-6 py-20 text-center text-white"><div className="grid-bg glow-top absolute inset-0" aria-hidden />
+              <div className="relative text-4xl">🔒</div>
+              <h1 className="relative mt-4 font-display text-2xl font-bold tracking-tight">{current.title}</h1>
+              <p className="relative mt-2 max-w-sm text-night-ink">This lecture is part of the full course. Enroll to unlock every lecture, practice and test.</p>
+              {course.product && <LinkButton href={`/checkout/${course.product.id}`} variant="violet" size="lg" className="relative mt-6">Enroll now</LinkButton>}
             </Card>
           ) : (
             <Card className="p-10 text-center text-ink-3">No lectures have been published for this course yet.</Card>

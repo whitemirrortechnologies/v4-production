@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Badge, Card, LinkButton } from "@/components/ui";
+import { Badge, Card, Eyebrow, LinkButton } from "@/components/ui";
 import { getCourseBySlug, getCurriculum, priceOf } from "@/lib/catalog";
 import { getViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -27,20 +27,22 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   const published = (l: { status: string }) => l.status === "published";
 
   return (
-    <main>
-      <section className="glow-violet border-b border-line">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1fr_22rem]">
+    <main id="main">
+      <section className="on-night relative overflow-hidden bg-night text-white">
+        <div className="grid-bg glow-top absolute inset-0" aria-hidden />
+        <div className="relative mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-10 lg:grid-cols-[1fr_24rem] lg:py-20">
           <div>
-            <Badge tone="violet">{course.exam.name}</Badge>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">{course.title}</h1>
-            {course.subtitle && <p className="mt-4 max-w-2xl text-lg text-ink-2">{course.subtitle}</p>}
-            <p className="mt-6 text-sm text-ink-3">
-              {course.stats?.lecture_count ?? 0} lectures · {duration(course.stats?.total_duration_seconds)}
-              {(course.stats?.test_count ?? 0) > 0 && <> · {course.stats!.test_count} tests</>}
-            </p>
+            <Eyebrow dark dot>{course.exam.name}</Eyebrow>
+            <h1 className="h1 mt-5 !text-[clamp(2.2rem,1.6rem+2.6vw,4rem)] text-white">{course.title}</h1>
+            {course.subtitle && <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#cfcfcf]">{course.subtitle}</p>}
+            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
+              {[["Lectures", course.stats?.lecture_count ?? 0], ["Duration", duration(course.stats?.total_duration_seconds)], ["Tests", course.stats?.test_count ?? 0]].map(([k, v]) => (
+                <div key={k as string}><dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-night-ink-2">{k}</dt><dd className="mt-1 font-display text-2xl font-bold">{v}</dd></div>
+              ))}
+            </dl>
           </div>
-          <Card className="h-fit p-6 shadow-lift lg:sticky lg:top-24">
-            <p className="text-3xl font-semibold tracking-tight">
+          <Card className="h-fit border-night-line bg-white p-6 text-ink shadow-lift lg:sticky lg:top-24">
+            <p className="font-display text-4xl font-bold tracking-tight">
               {price == null ? "Not on sale" : rupees(price)}
               {sale && <span className="ml-2 text-base font-normal text-ink-3 line-through">{rupees(course.product!.price_paise)}</span>}
             </p>
@@ -49,25 +51,23 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
               {enrolled ? (
                 <LinkButton href={`/app/learn/${course.slug}`} size="lg" variant="violet" className="w-full">Continue learning</LinkButton>
               ) : course.product ? (
-                <LinkButton href={`/checkout/${course.product.id}`} size="lg" variant="violet" className="w-full">
-                  {price === 0 ? "Enroll for free" : "Enroll now"}
-                </LinkButton>
+                <LinkButton href={`/checkout/${course.product.id}`} size="lg" variant="violet" className="w-full">{price === 0 ? "Enroll for free" : "Enroll now"}</LinkButton>
               ) : null}
             </div>
-            <ul className="mt-5 space-y-2 text-sm text-ink-2">
-              <li>All lectures, notes and course tests</li>
-              <li>Topic-wise practice for {course.exam.name}</li>
-              {(course.stats?.free_preview_count ?? 0) > 0 && <li>{course.stats!.free_preview_count} free preview lecture(s)</li>}
+            <ul className="mt-5 space-y-2.5 text-sm text-ink-2">
+              <li className="flex gap-2"><span className="text-violet-600">✓</span>All lectures, notes and course tests</li>
+              <li className="flex gap-2"><span className="text-violet-600">✓</span>Topic-wise practice for {course.exam.name}</li>
+              {(course.stats?.free_preview_count ?? 0) > 0 && <li className="flex gap-2"><span className="text-violet-600">✓</span>{course.stats!.free_preview_count} free preview lecture(s)</li>}
             </ul>
           </Card>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-5 py-12">
+      <div className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
         {course.description && (
           <div className="mb-12 max-w-3xl whitespace-pre-line text-ink-2">{course.description}</div>
         )}
-        <h2 className="text-2xl font-semibold tracking-tight">Curriculum</h2>
+        <h2 className="h2">Curriculum</h2>
         <div className="mt-6 space-y-6">
           {tree.map((s) => (
             <section key={s.id}>

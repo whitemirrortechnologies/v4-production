@@ -1,104 +1,117 @@
 @import "tailwindcss";
 
-/* ---------- Design tokens: black & white with a purple tint ---------- */
+/* ---------- Design tokens (from the V4 reference): black, white, one indigo accent ---------- */
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --color-ink: oklch(0.16 0 0);
-  --color-ink-2: oklch(0.38 0 0);
-  --color-ink-3: oklch(0.55 0 0);
-  --color-line: oklch(0.92 0 0);
-  --color-wash: oklch(0.975 0 0);
-  --color-paper: oklch(1 0 0);
+  /* light surfaces */
+  --color-ink: #050505;
+  --color-ink-2: #3a3a3a;
+  --color-ink-3: #666666;
+  --color-ink-4: #8a8a8a;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d0d0d0;
+  --color-wash: #f5f5f5;
+  --color-paper: #ffffff;
 
-  --color-violet-50: oklch(0.97 0.012 295);
-  --color-violet-100: oklch(0.94 0.03 295);
-  --color-violet-300: oklch(0.8 0.1 295);
-  --color-violet-500: oklch(0.58 0.2 295);
-  --color-violet-600: oklch(0.5 0.22 295);
-  --color-violet-900: oklch(0.28 0.1 295);
+  /* dark surfaces */
+  --color-night: #050505;
+  --color-night-2: #0a0a0a;
+  --color-night-3: #111111;
+  --color-night-4: #181818;
+  --color-night-line: #242424;
+  --color-night-line-2: #3a3a3a;
+  --color-night-ink: #a8a8a8;
+  --color-night-ink-2: #8a8a8a;
 
-  --color-good: oklch(0.62 0.15 150);
-  --color-bad: oklch(0.6 0.2 25);
+  /* accent */
+  --color-violet-50: #f1f0ff;
+  --color-violet-100: #e4e2ff;
+  --color-violet-300: #a5a0ff;
+  --color-violet-500: #635bff;
+  --color-violet-600: #4f46e5;
+  --color-violet-900: #2b2680;
 
-  --radius-card: 1.25rem;
-  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.06);
-  --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.05), 0 16px 40px oklch(0 0 0 / 0.1);
-  --ease-apple: cubic-bezier(0.22, 1, 0.36, 1);
-}
+  --color-good: #16803c;
+  --color-bad: #c42b2b;
+  --color-warn: #a16207;
 
-/* Dark follows the device setting. Same tokens, inverted. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-ink: oklch(0.97 0 0);
-    --color-ink-2: oklch(0.78 0 0);
-    --color-ink-3: oklch(0.62 0 0);
-    --color-line: oklch(0.27 0 0);
-    --color-wash: oklch(0.2 0 0);
-    --color-paper: oklch(0.145 0 0);
-    --color-violet-50: oklch(0.22 0.04 295);
-    --color-violet-100: oklch(0.28 0.06 295);
-    --color-violet-300: oklch(0.55 0.15 295);
-    --color-violet-500: oklch(0.7 0.17 295);
-    --color-violet-600: oklch(0.78 0.14 295);
-    --color-violet-900: oklch(0.9 0.05 295);
-    --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.4), 0 8px 24px oklch(0 0 0 / 0.4);
-    --shadow-lift: 0 2px 4px oklch(0 0 0 / 0.5), 0 16px 40px oklch(0 0 0 / 0.5);
-    color-scheme: dark;
-  }
+  --radius-card: 1.5rem;
+  --shadow-soft: 0 1px 2px #0505050a, 0 12px 32px -16px #0505052e;
+  --shadow-lift: 0 1px 2px #0505050a, 0 24px 56px -24px #05050573;
+  --shadow-glow: 0 0 0 1px #635bff59, 0 12px 40px -12px #635bff73;
+  --ease-apple: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   scroll-padding-top: 5rem;
-  /* Native scrolling only: no scroll-jacking, no smooth-scroll hijack. */
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: none; /* native scrolling only: no scroll-jacking */
 }
 body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-feature-settings: "ss01", "cv11";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100dvh;
 }
-::selection { background: var(--color-violet-100); }
+h1, h2, h3 { font-family: var(--font-display); }
+::selection { background: var(--color-violet-100); color: var(--color-ink); }
 :focus-visible { outline: 2px solid var(--color-violet-500); outline-offset: 2px; border-radius: 0.5rem; }
 
-/* Soft purple glow used behind hero sections ("grade"). Static: no animation, no scroll cost. */
-.glow-violet {
-  background:
-    radial-gradient(60rem 28rem at 50% -10%, oklch(0.9 0.08 295 / 0.55), transparent 70%),
-    radial-gradient(40rem 20rem at 85% 10%, oklch(0.93 0.05 320 / 0.4), transparent 70%);
+/* Headline scale: fluid, tight tracking (as in the reference). */
+.display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.045em; line-height: 1; font-size: clamp(2.5rem, 1.55rem + 4.4vw, 5.25rem); }
+.h1 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; font-size: clamp(2rem, 1.55rem + 2vw, 3.25rem); }
+.h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.035em; line-height: 1.1; font-size: clamp(1.625rem, 1.35rem + 1.2vw, 2.375rem); }
+.eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-violet-600); }
+.on-night .eyebrow, .eyebrow-night { color: var(--color-violet-300); }
+
+/* Dark hero/section surface: black + faint grid + soft indigo glow. All static (zero scroll cost). */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, #ffffff0a 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffff0a 1px, transparent 1px);
+  background-size: 64px 64px;
 }
-@media (prefers-color-scheme: dark) {
-  .glow-violet {
-    background:
-      radial-gradient(60rem 28rem at 50% -10%, oklch(0.35 0.14 295 / 0.55), transparent 70%),
-      radial-gradient(40rem 20rem at 85% 10%, oklch(0.3 0.1 320 / 0.35), transparent 70%);
-  }
+.glow-top { background-image: radial-gradient(44rem 20rem at 72% -8%, #635bff1f, transparent 70%); }
+.glow-bottom { background-image: radial-gradient(34rem 16rem at 10% 110%, #635bff1f, transparent 70%); }
+/* Grid + glow on one element: layer them (otherwise the glow would tile at the grid size). */
+.grid-bg.glow-top, .grid-bg.glow-bottom {
+  background-image:
+    radial-gradient(44rem 20rem at 72% -8%, #635bff1f, transparent 70%),
+    linear-gradient(to right, #ffffff0a 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffff0a 1px, transparent 1px);
+  background-size: auto, 64px 64px, 64px 64px;
+  background-repeat: no-repeat, repeat, repeat;
 }
-.text-grade {
-  background-image: linear-gradient(100deg, var(--color-ink) 0%, var(--color-violet-500) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+.grid-bg.glow-bottom {
+  background-image:
+    radial-gradient(34rem 16rem at 10% 110%, #635bff1f, transparent 70%),
+    linear-gradient(to right, #ffffff0a 1px, transparent 1px),
+    linear-gradient(to bottom, #ffffff0a 1px, transparent 1px);
 }
 
 /* Long lists render only what's on screen. */
 .cv-auto { content-visibility: auto; contain-intrinsic-size: auto 96px; }
 
-/* Entrance: cheap (opacity + transform only), off when the user prefers reduced motion. */
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.rise { animation: rise 0.5s var(--ease-apple) both; }
+/* Entrance: opacity + transform only; off for reduced-motion users. */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise 0.6s var(--ease-apple) both; }
+@keyframes orbit { to { transform: rotate(360deg); } }
+.orbit-spin { transform-origin: 50% 50%; animation: orbit 90s linear infinite; }
+.orbit-spin-rev { transform-origin: 50% 50%; animation: orbit 140s linear infinite reverse; }
 @media (prefers-reduced-motion: reduce) {
-  .rise { animation: none; }
-  * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .rise, .orbit-spin, .orbit-spin-rev { animation: none; }
+  * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
 
 .scroll-y { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .hide-scrollbar { scrollbar-width: none; }
 .hide-scrollbar::-webkit-scrollbar { display: none; }
+details > summary { list-style: none; }
+details > summary::-webkit-details-marker { display: none; }

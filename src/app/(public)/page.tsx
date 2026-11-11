@@ -1,73 +1,167 @@
 import Link from "next/link";
 import { CourseCard } from "@/components/course-card";
-import { LinkButton } from "@/components/ui";
-import { getCourses, getExams } from "@/lib/catalog";
+import { OrbitGraphic } from "@/components/orbit-graphic";
+import { Arrow, btn, Eyebrow } from "@/components/ui";
+import { getCourses, getExamSummaries } from "@/lib/catalog";
 
 export const revalidate = 60;
 
+const CHIPS: Record<string, string[]> = {
+  GATE_CS: ["Concepts", "Courses", "Practice", "Tests", "Analytics"],
+  CAT: ["Quant", "VARC", "DILR", "Practice", "Mocks", "Analytics"],
+};
+const KICKER: Record<string, string> = { GATE_CS: "Engineering-focused preparation", CAT: "Aptitude-focused preparation" };
+const SUB: Record<string, string> = { GATE_CS: "Graduate Aptitude Test in Engineering", CAT: "Common Admission Test" };
+
+const LOOP = [
+  ["01", "Learn", "Structured courses", "Subject → module → chapter → lecture. Always know what comes next, and resume exactly where you stopped."],
+  ["02", "Practice", "Focused practice", "Topic-wise questions with instant explanations. Timed mode when you need pressure, untimed when you need depth."],
+  ["03", "Test", "Real exam conditions", "Topic, sectional and full mock tests with the actual marking scheme, question palette and timers."],
+  ["04", "Analyze", "Measured progress", "Accuracy by topic, section performance and one clear recommendation for what to do next."],
+];
+const FAQ = [
+  ["Which exams does V4 support?", "GATE Computer Science & IT and CAT. Each has its own courses, syllabus-based practice and mock tests."],
+  ["Is there free content?", "Yes. In most courses a few lectures, tests and practice questions are free so you can try before you buy. What is free is chosen per course."],
+  ["How do payments work?", "Pick a course, apply a coupon if you have one, and enroll at checkout. Checkout currently runs in demo mode while the payment gateway is being connected."],
+  ["Can I prepare on my phone?", "Yes. Every page is built mobile-first, and the lecture player remembers where you stopped on any device."],
+  ["Do I have to finish lectures in order?", "No. The order is a recommendation. You can open any lecture you have access to."],
+];
+
 export default async function Home() {
-  const [exams, courses] = await Promise.all([getExams(), getCourses()]);
+  const [exams, courses] = await Promise.all([getExamSummaries(), getCourses()]);
   return (
-    <main>
-      <section className="glow-violet">
-        <div className="mx-auto max-w-4xl px-5 pb-24 pt-20 text-center sm:pt-28">
-          <p className="rise text-sm font-medium text-violet-600">GATE CS/IT · CAT</p>
-          <h1 className="rise mt-4 text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl" style={{ animationDelay: "60ms" }}>
-            Learn. Practice.<br /><span className="text-grade">Crack it.</span>
-          </h1>
-          <p className="rise mx-auto mt-6 max-w-xl text-lg text-ink-2" style={{ animationDelay: "120ms" }}>
-            Video courses, topic-wise practice and full-length mock tests, in one calm place.
-          </p>
-          <div className="rise mt-9 flex flex-wrap justify-center gap-3" style={{ animationDelay: "180ms" }}>
-            <LinkButton href="/courses" size="lg">Browse courses</LinkButton>
-            <LinkButton href="/signup" size="lg" variant="secondary">Create free account</LinkButton>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-3xl font-semibold tracking-tight">Pick your exam</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {exams.map((e) => (
-            <Link
-              key={e.id}
-              href={`/exams/${e.code.toLowerCase()}`}
-              className="group rounded-[var(--radius-card)] border border-line bg-wash p-8 transition-[box-shadow,transform] duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:shadow-lift"
-            >
-              <p className="text-4xl font-semibold tracking-tight">{e.code.replace("_", " ")}</p>
-              <p className="mt-2 text-ink-2">{e.name}</p>
-              <p className="mt-6 text-sm font-medium text-violet-600">Explore →</p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-5 py-8">
-        <div className="grid gap-px overflow-hidden rounded-[var(--radius-card)] border border-line bg-line sm:grid-cols-3">
-          {[
-            ["Learn", "Distraction-free video lectures that remember where you stopped."],
-            ["Practice", "Topic-wise questions with past-year papers. Timed or untimed."],
-            ["Test", "Full-length mocks under real exam conditions, with detailed analysis."],
-          ].map(([t, d]) => (
-            <div key={t} className="bg-paper p-8">
-              <p className="text-xl font-semibold tracking-tight">{t}</p>
-              <p className="mt-2 text-ink-3">{d}</p>
+    <main id="main">
+      {/* ------- Hero ------- */}
+      <section className="on-night relative overflow-hidden bg-night text-white">
+        <div className="grid-bg glow-top absolute inset-0" aria-hidden />
+        <div className="relative mx-auto grid max-w-[90rem] items-center gap-6 px-4 pb-16 pt-16 sm:px-10 lg:grid-cols-[1.05fr_1fr] lg:pb-20 lg:pt-24">
+          <div>
+            <div className="rise"><Eyebrow dark dot>Preparation system for GATE &amp; CAT</Eyebrow></div>
+            <h1 className="display rise mt-6 text-white" style={{ animationDelay: "60ms" }}>
+              Prepare with purpose.<br /><span className="text-[#6b6b6b]">Perform with confidence.</span>
+            </h1>
+            <p className="rise mt-7 max-w-xl text-lg leading-relaxed text-[#cfcfcf]" style={{ animationDelay: "120ms" }}>
+              A structured preparation system for GATE, CAT and the exams you&apos;re targeting.
+            </p>
+            <div className="rise mt-9 flex flex-wrap gap-3" style={{ animationDelay: "180ms" }}>
+              <Link href="/exams/gate_cs" className={btn({ variant: "inverse", size: "lg" })}>Explore GATE</Link>
+              <Link href="/exams/cat" className={btn({ variant: "outlineDark", size: "lg" })}>Explore CAT</Link>
             </div>
+            <a href="#how" className="rise mt-8 inline-flex items-center gap-2 text-sm font-medium text-night-ink hover:text-white" style={{ animationDelay: "240ms" }}>
+              See how V4 works <svg aria-hidden viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v10M4 9l4 4 4-4" /></svg>
+            </a>
+          </div>
+          <OrbitGraphic className="rise mx-auto w-full max-w-[40rem]" />
+        </div>
+        <ol className="relative mx-auto flex max-w-[90rem] gap-6 overflow-x-auto border-t border-night-line px-4 py-4 font-mono text-xs text-night-ink-2 hide-scrollbar sm:gap-8 sm:px-10">
+          {["Learn", "Practice", "Test", "Analyze", "Improve"].map((s, i) => (
+            <li key={s} className="whitespace-nowrap"><span className="mr-2">0{i + 1}</span>{s}</li>
+          ))}
+        </ol>
+      </section>
+
+      {/* ------- Exams ------- */}
+      <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-10 lg:py-28">
+        <Eyebrow>Choose your exam</Eyebrow>
+        <h2 className="h1 mt-3">What are you preparing for?</h2>
+        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          {exams.map((e) => (
+            <article key={e.id} className="on-night relative overflow-hidden rounded-3xl bg-night p-8 text-white sm:p-11">
+              <div className="grid-bg glow-top absolute inset-0 opacity-90" aria-hidden />
+              <div className="relative">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">{KICKER[e.code] ?? "Exam preparation"}</p>
+                <p className="display mt-6" style={{ fontSize: "clamp(3.5rem, 2rem + 6vw, 6rem)" }}>{e.code.split("_")[0]}</p>
+                <p className="mt-2 text-night-ink">{SUB[e.code] ?? e.name}</p>
+                <ul className="mt-7 flex flex-wrap items-center gap-2 text-sm">
+                  {(CHIPS[e.code] ?? ["Courses", "Practice", "Tests"]).map((c, i, a) => (
+                    <li key={c} className="flex items-center gap-2">
+                      <span className="rounded-full border border-night-line-2 bg-night-3 px-3.5 py-1.5 text-white">{c}</span>
+                      {i < a.length - 1 && <span aria-hidden className="text-night-ink-2">→</span>}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-12 flex flex-wrap items-end justify-between gap-6">
+                  <dl className="flex gap-8">
+                    {[["Courses", e.courses], [e.code === "CAT" ? "Sections" : "Subjects", e.sections], ["Tests", e.tests]].map(([k, v]) => (
+                      <div key={k as string}><dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-night-ink-2">{k}</dt><dd className="mt-1 font-display text-2xl font-bold">{v}</dd></div>
+                    ))}
+                  </dl>
+                  <Link href={`/exams/${e.code.toLowerCase()}`} className={btn({ variant: "inverse" })}>Explore {e.code.split("_")[0]} <Arrow /></Link>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>
 
+      {/* ------- Why V4 ------- */}
+      <section className="bg-wash py-20 lg:py-28">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-4 sm:px-10 lg:grid-cols-[1fr_1.5fr]">
+          <div>
+            <Eyebrow>Why V4</Eyebrow>
+            <h2 className="h1 mt-3">Not a video library.<br />A preparation loop.</h2>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-2">
+              Most platforms give you content. V4 connects learning, practice, testing and analysis so every session moves your score, and you can see it move.
+            </p>
+          </div>
+          <ol className="border-t border-line-strong">
+            {LOOP.map(([n, name, title, body]) => (
+              <li key={n} className="grid grid-cols-[6.5rem_1fr_auto] items-start gap-4 border-b border-line-strong py-7 sm:grid-cols-[9rem_1fr_auto]">
+                <p className="font-mono text-lg font-bold"><span className="mr-2">{n}</span><span className="font-display">{name}</span></p>
+                <div><p className="font-semibold">{title}</p><p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-3">{body}</p></div>
+                <Arrow className="mt-1 size-5 text-ink-3" />
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ------- Featured courses ------- */}
       {courses.length > 0 && (
-        <section className="mx-auto max-w-6xl px-5 py-16">
-          <div className="flex items-end justify-between">
-            <h2 className="text-3xl font-semibold tracking-tight">Latest courses</h2>
-            <Link href="/courses" className="text-sm font-medium text-violet-600">View all →</Link>
+        <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-10 lg:py-28">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div><Eyebrow>Start learning</Eyebrow><h2 className="h1 mt-3">Featured courses</h2></div>
+            <Link href="/courses" className={btn({ variant: "outline" })}>All courses <Arrow /></Link>
           </div>
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.slice(0, 6).map((c) => <CourseCard key={c.id} course={c} />)}
-          </div>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.slice(0, 6).map((c) => <CourseCard key={c.id} course={c} />)}</div>
         </section>
       )}
+
+      {/* ------- How it works ------- */}
+      <section id="how" className="on-night bg-night py-20 text-white lg:py-28">
+        <div className="mx-auto max-w-[90rem] px-4 sm:px-10">
+          <Eyebrow dark>How V4 works</Eyebrow>
+          <h2 className="h1 mt-3">Three steps. Then repeat.</h2>
+          <ol className="mt-14 grid gap-0 md:grid-cols-3">
+            {[["01", "Choose your exam", "Pick GATE or CAT. V4 shapes courses, practice and tests around that goal."],
+              ["02", "Follow a clear path", "Work through structured lectures, then practise each topic while it is fresh."],
+              ["03", "Measure and improve", "Take tests, see exactly where marks are lost, and let V4 point you to the next step."]].map(([n, t, d]) => (
+              <li key={n} className="relative border-t border-night-line px-0 py-8 md:border-l md:px-8 md:first:border-l-0 md:first:pl-0">
+                <span aria-hidden className="absolute -top-px left-0 h-0.5 w-12 bg-violet-500 md:left-8 md:[li:first-child>&]:left-0" />
+                <p className="font-display text-6xl font-bold text-transparent [-webkit-text-stroke:1px_#3a3a3a]">{n}</p>
+                <h3 className="mt-6 text-xl font-bold tracking-tight">{t}</h3>
+                <p className="mt-2 max-w-xs leading-relaxed text-night-ink">{d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ------- FAQ ------- */}
+      <section className="mx-auto grid max-w-[90rem] gap-12 px-4 py-20 sm:px-10 lg:grid-cols-[1fr_1.7fr] lg:py-28">
+        <div><Eyebrow>FAQ</Eyebrow><h2 className="h1 mt-3">Good questions</h2></div>
+        <div className="border-t border-line-strong">
+          {FAQ.map(([q, a]) => (
+            <details key={q} className="group border-b border-line-strong">
+              <summary className="flex cursor-pointer items-center justify-between gap-4 py-5 font-semibold">
+                {q}
+                <svg aria-hidden viewBox="0 0 16 16" className="size-4 shrink-0 text-ink-3 transition-transform duration-200 group-open:rotate-45" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><path d="M8 3v10M3 8h10" /></svg>
+              </summary>
+              <p className="max-w-2xl pb-5 leading-relaxed text-ink-3">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

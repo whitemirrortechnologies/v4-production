@@ -1,50 +1,38 @@
 import Link from "next/link";
 import { env } from "@/lib/env";
 import { getViewer } from "@/lib/auth";
-import { signOut } from "@/app/(auth)/actions";
-import { LinkButton, Button } from "@/components/ui";
+import { HeaderClient } from "@/components/header-client";
+import { Logo } from "@/components/logo";
 
 export async function SiteHeader() {
   const viewer = await getViewer().catch(() => null);
-  const staff = viewer && viewer.profile.role !== "student";
-  return (
-    <header className="sticky top-0 z-40 border-b border-line bg-paper/95">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-        <Link href="/" className="text-xl font-semibold tracking-tight">
-          {env.siteName}
-        </Link>
-        <nav className="hidden items-center gap-1 text-[15px] text-ink-2 sm:flex">
-          <Link className="rounded-full px-4 py-2 hover:bg-wash" href="/exams/gate_cs">GATE</Link>
-          <Link className="rounded-full px-4 py-2 hover:bg-wash" href="/exams/cat">CAT</Link>
-          <Link className="rounded-full px-4 py-2 hover:bg-wash" href="/courses">Courses</Link>
-        </nav>
-        <div className="flex items-center gap-2">
-          {viewer ? (
-            <>
-              {staff && <LinkButton href="/admin" variant="secondary" size="sm">Admin</LinkButton>}
-              <LinkButton href="/app" variant="secondary" size="sm">My learning</LinkButton>
-              <form action={signOut}>
-                <Button variant="ghost" size="sm" type="submit">Sign out</Button>
-              </form>
-            </>
-          ) : (
-            <>
-              <LinkButton href="/login" variant="ghost" size="sm">Sign in</LinkButton>
-              <LinkButton href="/signup" size="sm">Get started</LinkButton>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
-  );
+  return <HeaderClient name={env.siteName} signedIn={!!viewer} staff={!!viewer && viewer.profile.role !== "student"} />;
 }
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-line">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-10 text-sm text-ink-3">
-        <p>© {new Date().getFullYear()} {env.siteName}. Learn. Practice. Test.</p>
-        <p>GATE CS/IT · CAT</p>
+    <footer className="border-t border-night-line bg-night text-night-ink">
+      <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <Logo name={env.siteName} />
+          <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for GATE CS/IT and CAT. Learn, practise, test and improve.</p>
+        </div>
+        <nav aria-label="Explore" className="flex flex-col gap-2.5 text-sm">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Explore</p>
+          <Link className="hover:text-white" href="/exams">Exams</Link>
+          <Link className="hover:text-white" href="/courses">Courses</Link>
+          <Link className="hover:text-white" href="/exams/gate_cs">GATE</Link>
+          <Link className="hover:text-white" href="/exams/cat">CAT</Link>
+        </nav>
+        <nav aria-label="Account" className="flex flex-col gap-2.5 text-sm">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Account</p>
+          <Link className="hover:text-white" href="/login">Log in</Link>
+          <Link className="hover:text-white" href="/signup">Create account</Link>
+          <Link className="hover:text-white" href="/app">My learning</Link>
+        </nav>
+      </div>
+      <div className="border-t border-night-line">
+        <p className="mx-auto max-w-[90rem] px-4 py-5 text-xs text-night-ink-2 sm:px-10">© {new Date().getFullYear()} {env.siteName}. All rights reserved.</p>
       </div>
     </footer>
   );
