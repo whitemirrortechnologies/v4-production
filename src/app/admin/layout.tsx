@@ -7,8 +7,6 @@ const links = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/syllabus", label: "Syllabus" },
   { href: "/admin/courses", label: "Courses" },
-  { href: "/admin/questions", label: "Questions" },
-  { href: "/admin/tests", label: "Tests" },
   { href: "/admin/users", label: "Users", adminOnly: true },
   { href: "/admin/orders", label: "Orders", adminOnly: true },
 ];
