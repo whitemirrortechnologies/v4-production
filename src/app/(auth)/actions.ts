@@ -11,13 +11,14 @@ export type AuthState = { error?: string; message?: string } | null;
 const safeNext = (n: FormDataEntryValue | null) =>
   typeof n === "string" && n.startsWith("/") && !n.startsWith("//") ? n : "/app";
 
-const creds = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address")),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
+const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address"));
+/** Sign-in never judges length: Supabase decides (existing accounts may have shorter passwords). */
+const signInCreds = z.object({ email, password: z.string().min(1, "Enter your password") });
+/** 6 = Supabase's default minimum. Raise it in Supabase (Auth → Providers → Email) and here together. */
+const signUpCreds = z.object({ email, password: z.string().min(6, "Password must be at least 6 characters") });
 
 export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
-  const parsed = creds.safeParse({ email: form.get("email"), password: form.get("password") });
+  const parsed = signInCreds.safeParse({ email: form.get("email"), password: form.get("password") });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
@@ -28,7 +29,7 @@ export async function signIn(_: AuthState, form: FormData): Promise<AuthState> {
 export async function signUp(_: AuthState, form: FormData): Promise<AuthState> {
   const name = String(form.get("full_name") ?? "").trim();
   if (name.length < 2) return { error: "Please enter your name" };
-  const parsed = creds.safeParse({ email: form.get("email"), password: form.get("password") });
+  const parsed = signUpCreds.safeParse({ email: form.get("email"), password: form.get("password") });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
   const h = await headers();

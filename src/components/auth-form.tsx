@@ -17,8 +17,8 @@ export function AuthForm({
       )}
       <label className="block"><Label>Email</Label><Input name="email" type="email" autoComplete="email" inputMode="email" required /></label>
       <label className="block">
-        <Label hint={mode === "signup" ? "8+ characters" : undefined}>Password</Label>
-        <Input name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} required />
+        <Label hint={mode === "signup" ? "6+ characters" : undefined}>Password</Label>
+        <Input name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "signup" ? 6 : undefined} required />
       </label>
       {state?.error && <Notice tone="error">{state.error}</Notice>}
       {state?.message && <Notice tone="success">{state.message}</Notice>}
