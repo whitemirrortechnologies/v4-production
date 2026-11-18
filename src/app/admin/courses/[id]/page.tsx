@@ -144,7 +144,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
           )}
           {tree.length === 0 && (
             <p className="rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-900">
-              <span className="font-semibold">Start here:</span> add a subject, then a module and a chapter inside it. Lectures (with the video) live inside a chapter.
+              <span className="font-semibold">Start here:</span> add a subject (for example “Arithmetic”). A first module and chapter are created for you, so you can add your first lecture right away.
             </p>
           )}
           {tree.map((s) => (

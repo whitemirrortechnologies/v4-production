@@ -53,6 +53,22 @@ export async function updateTest(f: FormData): Promise<Result> {
   return { ok: row.status === "published" ? "Saved · live for students" : "Saved" };
 }
 
+/** One-click publish / hide for a test. Publishing needs at least one question. */
+export async function setTestStatus(f: FormData): Promise<Result> {
+  await requireStaff();
+  const id = str(f, "id"), status = str(f, "status");
+  if (!["draft", "published", "archived"].includes(status)) return { error: "Unknown status" };
+  const supabase = await createClient();
+  if (status === "published") {
+    const { count } = await supabase.from("test_questions").select("*", { count: "exact", head: true }).eq("test_id", id);
+    if (!count) return { error: "Add at least one question before publishing this test" };
+  }
+  const { error } = await supabase.from("tests").update({ status }).eq("id", id);
+  if (error) return E(error);
+  refresh(page(id), "/admin/tests", "/app/tests");
+  return { ok: status === "published" ? "Test is live for students" : "Test hidden from students" };
+}
+
 export async function deleteTest(f: FormData): Promise<Result> {
   await requireStaff();
   const supabase = await createClient();

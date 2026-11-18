@@ -123,8 +123,16 @@ export async function addNode(f: FormData): Promise<Result> {
   const parentCol = LEVELS[table].parent, parentId = str(f, "parent_id");
   const supabase = await createClient();
   const { count } = await supabase.from(table).select("*", { count: "exact", head: true }).eq(parentCol, parentId);
-  const { error } = await supabase.from(table).insert({ [parentCol]: parentId, title, position: (count ?? 0) + 1 });
+  const { data: created, error } = await supabase.from(table).insert({ [parentCol]: parentId, title, position: (count ?? 0) + 1 }).select("id").single();
   if (error) return E(error);
+  // Save a few clicks: a new subject gets a first module and a new module gets a first chapter,
+  // so the "Add a lecture" box is available straight away. They can be renamed or deleted.
+  if (table === "course_subjects") {
+    const { data: mod } = await supabase.from("course_modules").insert({ subject_id: created.id, title: "Module 1", position: 1 }).select("id").single();
+    if (mod) await supabase.from("course_chapters").insert({ module_id: mod.id, title: "Chapter 1", position: 1 });
+  } else if (table === "course_modules") {
+    await supabase.from("course_chapters").insert({ module_id: created.id, title: "Chapter 1", position: 1 });
+  }
   refresh(page(courseId));
 }
 

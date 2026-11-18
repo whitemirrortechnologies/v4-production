@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LinkButton, PageHeader } from "@/components/ui";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -14,10 +15,28 @@ export default async function AdminHome() {
     return (f ? await f(q) : await q).count ?? 0;
   };
   const isAdmin = profile.role === "admin";
-  const [courses, lectures, questions, tests, students] = await Promise.all([
+  const draft = (q: any) => q.eq("status", "draft");
+  const live = (q: any) => q.eq("status", "published");
+  const [courses, lectures, questions, tests, students, draftCourses, draftLectures, draftTests, draftQuestions, liveCourses, liveTests, withVideo] = await Promise.all([
     count("courses"), count("lectures"), count("questions"), count("tests"),
     isAdmin ? count("profiles", (q) => q.eq("role", "student")) : Promise.resolve(0),
+    count("courses", draft), count("lectures", draft), count("tests", draft), count("questions", draft),
+    count("courses", live), count("tests", live), count("lectures", (q) => q.eq("video_status", "ready")),
   ]);
+  const steps = [
+    { done: courses > 0, label: "Create a course", href: "/admin/courses" },
+    { done: withVideo > 0, label: "Add a lecture and upload its video", href: "/admin/courses" },
+    { done: liveCourses > 0 && draftLectures === 0 && lectures > 0, label: "Publish the course and its lectures", href: "/admin/courses" },
+    { done: questions > 0, label: "Add practice questions", href: "/admin/questions/new" },
+    { done: tests > 0, label: "Create a test and add questions", href: "/admin/tests" },
+    { done: liveTests > 0, label: "Publish a test", href: "/admin/tests" },
+  ];
+  const attention = [
+    draftCourses > 0 && { n: draftCourses, text: `course${draftCourses === 1 ? " is" : "s are"} still a draft`, href: "/admin/courses" },
+    draftLectures > 0 && { n: draftLectures, text: `lecture${draftLectures === 1 ? " is" : "s are"} still a draft`, href: "/admin/courses" },
+    draftQuestions > 0 && { n: draftQuestions, text: `question${draftQuestions === 1 ? " is" : "s are"} still a draft`, href: "/admin/questions?status=draft" },
+    draftTests > 0 && { n: draftTests, text: `test${draftTests === 1 ? " is" : "s are"} still a draft`, href: "/admin/tests" },
+  ].filter(Boolean) as { n: number; text: string; href: string }[];
   const activity = isAdmin ? (await supabase.rpc("admin_daily_activity", { p_days: 14 })).data ?? [] : [];
   const storage = (await supabase.rpc("admin_storage_usage")).data ?? [];
   const used = (storage as { total_bytes: number }[]).reduce((n, r) => n + Number(r.total_bytes), 0);
@@ -31,7 +50,37 @@ export default async function AdminHome() {
   return (
     <>
       <PageHeader eyebrow={`${profile.role} console`} title="Overview" subtitle={`Welcome back${profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}. Here's how V4 is doing.`}
-        action={<div className="flex gap-2"><LinkButton href="/admin/courses" variant="outline" size="sm">Courses</LinkButton><LinkButton href="/admin/syllabus" size="sm">Syllabus</LinkButton></div>} />
+        action={<div className="flex gap-2"><LinkButton href="/admin/questions/new" variant="outline" size="sm">Add question</LinkButton><LinkButton href="/admin/courses" size="sm">Add course</LinkButton></div>} />
+
+      {(steps.some((x) => !x.done) || attention.length > 0) && (
+        <div className="mb-6 grid gap-4 lg:grid-cols-2">
+          {steps.some((x) => !x.done) && (
+            <div className="rounded-2xl border border-line bg-paper p-5">
+              <p className="font-semibold">Getting started</p>
+              <p className="mt-0.5 text-sm text-ink-3">{steps.filter((x) => x.done).length} of {steps.length} done</p>
+              <ol className="mt-4 space-y-1">
+                {steps.map((x) => (
+                  <li key={x.label}>
+                    <Link href={x.href} className={`flex items-center gap-3 rounded-lg px-2 py-2 text-sm hover:bg-wash ${x.done ? "text-ink-3" : "font-medium"}`}>
+                      <span className={`flex size-5 items-center justify-center rounded-full text-[11px] font-bold ${x.done ? "bg-good text-white" : "border border-line-strong text-ink-4"}`}>{x.done ? "✓" : ""}</span>
+                      <span className={x.done ? "line-through" : ""}>{x.label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+          {attention.length > 0 && (
+            <div className="rounded-2xl border border-amber-300/60 bg-amber-50 p-5 text-amber-950">
+              <p className="font-semibold">Hidden from students</p>
+              <p className="mt-0.5 text-sm opacity-80">Drafts are only visible to you. Open them and click Publish.</p>
+              <ul className="mt-4 space-y-1.5">
+                {attention.map((a) => <li key={a.text}><Link href={a.href} className="flex items-center justify-between rounded-lg bg-white/70 px-3 py-2 text-sm hover:bg-white"><span><b>{a.n}</b> {a.text}</span><span aria-hidden>→</span></Link></li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         {isAdmin && stat("Students", students)}
         {stat("Courses", courses)}

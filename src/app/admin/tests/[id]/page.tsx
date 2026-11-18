@@ -10,7 +10,7 @@ import { IconDown, IconTrash, IconUp } from "@/components/icons";
 import { TYPE_SHORT } from "@/lib/marking";
 import type { QuestionType } from "@/lib/types";
 import {
-  addTestSection, deleteTest, deleteTestSection, moveTestQuestion, removeTestQuestion, setLinks, setQuestionMarks, updateTest, updateTestSection,
+  addTestSection, deleteTest, deleteTestSection, moveTestQuestion, removeTestQuestion, setLinks, setQuestionMarks, setTestStatus, updateTest, updateTestSection,
 } from "../actions";
 
 export const metadata = { title: "Edit test · Admin" };
@@ -52,6 +52,19 @@ export default async function EditTest({ params, searchParams }: { params: Promi
             {rows.length} questions · {total} marks · {timed ? `${(sections ?? []).reduce((n, s) => n + s.duration_minutes, 0)} min (timed sections)` : `${test.duration_minutes} min`}
           </p>
         </div>
+      </div>
+      <div className={clsx("mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4", test.status === "published" ? "border-good/30 bg-good/5" : "border-amber-300/60 bg-amber-50")}>
+        <div>
+          <p className="font-semibold">{test.status === "published" ? "Live: students can take this test" : "Draft: students can’t see this test yet"}</p>
+          <p className="mt-0.5 text-sm text-ink-3">
+            {test.status === "published" ? "Changes to questions apply to new attempts."
+              : rows.length === 0 ? "Step 1: use “Add questions from bank” below. Step 2: publish." : `${rows.length} question${rows.length === 1 ? "" : "s"} added. Publish when you’re ready.`}
+          </p>
+        </div>
+        <ActionForm action={setTestStatus}>
+          <input type="hidden" name="id" value={id} /><input type="hidden" name="status" value={test.status === "published" ? "draft" : "published"} />
+          <Submit variant={test.status === "published" ? "outline" : "violet"} disabled={test.status !== "published" && rows.length === 0}>{test.status === "published" ? "Hide from students" : "Publish test"}</Submit>
+        </ActionForm>
       </div>
       <nav className="mb-8 mt-8 flex gap-1 border-b border-line">
         {tabs.map(([k, l]) => <Link key={k} href={`?tab=${k}`} className={clsx("-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold", tab === k ? "border-violet-500 text-ink" : "border-transparent text-ink-3 hover:text-ink")}>{l}</Link>)}

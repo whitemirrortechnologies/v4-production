@@ -9,8 +9,9 @@ import type { Exam, Question, QuestionGroup, QuestionKey, QuestionOption, Sectio
 
 export const metadata = { title: "Question · Admin" };
 
-export default async function QuestionPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function QuestionPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ topic?: string; n?: string }> }) {
   const { id } = await params;
+  const { topic, n } = await searchParams;
   await requireStaff(`/admin/questions/${id}`);
   const isAdmin = (await getViewer())?.profile.role === "admin";
   const supabase = await createClient();
@@ -41,9 +42,9 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
         )}
       </div>
       <QuestionEditor
-        key={id}
+        key={`${id}-${n ?? ""}`}
         exams={(exams ?? []) as Exam[]} sections={(sections ?? []) as Section[]} topics={topics} groups={(groups ?? []) as QuestionGroup[]}
-        question={q?.[0].data ?? null} options={(q?.[1].data ?? []) as QuestionOption[]} keyRow={q?.[2].data ?? null} isAdmin={isAdmin} />
+        question={q?.[0].data ?? null} options={(q?.[1].data ?? []) as QuestionOption[]} keyRow={q?.[2].data ?? null} isAdmin={isAdmin} initialTopic={topic ?? ""} />
     </>
   );
 }

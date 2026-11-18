@@ -14,8 +14,8 @@ import type { Exam, Question, QuestionGroup, QuestionKey, QuestionOption, Questi
 type Opt = { id: string; content: string; correct: boolean };
 const uuid = () => crypto.randomUUID();
 
-export function QuestionEditor({ exams, sections, topics, groups, question, options, keyRow, isAdmin }: {
-  exams: Exam[]; sections: Section[]; topics: Topic[]; groups: QuestionGroup[];
+export function QuestionEditor({ exams, sections, topics, groups, question, options, keyRow, isAdmin, initialTopic = "" }: {
+  exams: Exam[]; sections: Section[]; topics: Topic[]; groups: QuestionGroup[]; initialTopic?: string;
   question: Question | null; options: QuestionOption[]; keyRow: QuestionKey | null; isAdmin: boolean;
 }) {
   const router = useRouter();
@@ -24,7 +24,7 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
   const [examId, setExamId] = useState(q?.exam_id ?? exams[0]?.id ?? "");
   const exam = exams.find((e) => e.id === examId);
   const [type, setType] = useState<QuestionType>(q?.type ?? "mcq");
-  const [topicId, setTopicId] = useState(q?.topic_id ?? "");
+  const [topicId, setTopicId] = useState(q?.topic_id ?? initialTopic);
   const [groupId, setGroupId] = useState(q?.group_id ?? "");
   const [difficulty, setDifficulty] = useState(q?.difficulty ?? "medium");
   const [stem, setStem] = useState(q?.stem ?? "");
@@ -56,17 +56,20 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
     setOpts((os) => os.map((o, j) => (type === "mcq" ? { ...o, correct: i === j } : j === i ? { ...o, correct: !o.correct } : o)));
   }
 
-  function save(status: "draft" | "published") {
+  function save(status: "draft" | "published", another = false) {
+    // Blank option boxes are simply ignored when saving.
     const payload: QuestionPayload = {
       id: q?.id ?? null, exam_id: examId, topic_id: topicId, group_id: groupId || null, type, difficulty, stem,
       marks: Number(marks), negative_marks: Number(neg), is_pyq: isPyq, pyq_year: isPyq && year ? Number(year) : null,
       pyq_paper: isPyq ? paper || null : null, status, ...(isAdmin ? { is_free_practice: freePractice } : {}),
-      options: choice ? opts : [], nat_min: natMin === "" ? null : Number(natMin), nat_max: natMax === "" ? null : Number(natMax),
+      options: choice ? opts.filter((o) => o.content.trim() !== "") : [], nat_min: natMin === "" ? null : Number(natMin), nat_max: natMax === "" ? null : Number(natMax),
       tita_answer: tita || null, explanation: explanation || null,
     };
     start(async () => {
       const r = await saveQuestion(payload);
-      if (r?.error) toast(r.error, "error"); else toast(r?.ok ?? "Saved");
+      if (r?.error) { toast(r.error, "error"); return; }
+      toast(r?.ok ?? "Saved");
+      if (another) { router.push(`/admin/questions/new?topic=${topicId}&n=${Date.now()}`); return; }
       if (r?.id && !q) router.replace(`/admin/questions/${r.id}`);
       else router.refresh();
     });
@@ -166,8 +169,9 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
           <Textarea value={explanation} onChange={(e) => setExplanation(e.target.value)} rows={5} placeholder="Shown to students after they answer." className="font-mono text-sm" />
         </section>
 
-        <section className="rounded-2xl border border-line bg-paper p-5 sm:p-6">
-          <label className="flex items-center gap-2.5 text-sm font-semibold"><input type="checkbox" checked={isPyq} onChange={(e) => setIsPyq(e.target.checked)} className="size-4 accent-violet-600" />Past-year question (PYQ)</label>
+        <details className="group rounded-2xl border border-line bg-paper p-5 sm:p-6" open={isPyq || freePractice}>
+          <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold">More options <span className="text-xs font-normal text-ink-3">past-year question{isAdmin ? ", free practice" : ""}</span></summary>
+          <label className="mt-4 flex items-center gap-2.5 text-sm font-semibold"><input type="checkbox" checked={isPyq} onChange={(e) => setIsPyq(e.target.checked)} className="size-4 accent-violet-600" />Past-year question (PYQ)</label>
           {isPyq && (
             <div className="mt-4 grid gap-4 sm:grid-cols-[8rem_1fr]">
               <label className="block"><Label>Year</Label><Input type="number" min={1990} max={2100} value={year} onChange={(e) => setYear(e.target.value)} placeholder="2024" /></label>
@@ -180,12 +184,13 @@ export function QuestionEditor({ exams, sections, topics, groups, question, opti
               <span><span className="font-semibold">Free practice</span><br /><span className="text-ink-3">Students who haven&apos;t bought anything can practise this question.</span></span>
             </label>
           )}
-        </section>
+        </details>
 
         <div className="sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-[#fafafa]/95 px-4 py-3 sm:mx-0 sm:rounded-2xl sm:border">
           {q && <span className="mr-auto text-xs text-ink-3">Status: <span className="font-semibold">{q.status}</span></span>}
           <button type="button" disabled={pending} onClick={() => save("draft")} className={btn({ variant: "outline" })}>Save draft</button>
-          <button type="button" disabled={pending} onClick={() => save("published")} className={btn({})}>{pending && <IconSpinner size={14} />}Save &amp; publish</button>
+          <button type="button" disabled={pending} onClick={() => save("published", true)} className={btn({ variant: "outline" })}>Publish &amp; add another</button>
+          <button type="button" disabled={pending} onClick={() => save("published")} className={btn({ variant: "violet" })}>{pending && <IconSpinner size={14} />}Publish</button>
         </div>
       </div>
 

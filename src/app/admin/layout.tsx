@@ -7,13 +7,13 @@ import { Credit } from "@/components/credit";
 
 const links = [
   { href: "/admin", label: "Overview", icon: "overview" as const },
-  { href: "/admin/exams", label: "Exams", icon: "exams" as const },
-  { href: "/admin/syllabus", label: "Syllabus", icon: "syllabus" as const },
   { href: "/admin/courses", label: "Courses", icon: "courses" as const },
   { href: "/admin/questions", label: "Questions", icon: "questions" as const },
   { href: "/admin/tests", label: "Tests", icon: "tests" as const },
-  { href: "/admin/users", label: "Users", icon: "users" as const, adminOnly: true },
+  { href: "/admin/users", label: "Students", icon: "users" as const, adminOnly: true },
   { href: "/admin/orders", label: "Orders", icon: "orders" as const, adminOnly: true },
+  { href: "/admin/syllabus", label: "Topics (syllabus)", icon: "syllabus" as const, heading: "Setup" },
+  { href: "/admin/exams", label: "Exams", icon: "exams" as const },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
