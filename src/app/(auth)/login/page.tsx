@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
       <section className="on-night relative hidden overflow-hidden bg-night text-white lg:flex lg:flex-col lg:justify-between">
         <div className="grid-bg absolute inset-0" aria-hidden />
         <div className="glow-bottom absolute inset-0" aria-hidden />
-        <Link href="/" className="relative p-10"><Logo name={env.siteName} /></Link>
+        <Link href="/" className="relative p-10"><Logo name={env.siteName} full className="h-32" /></Link>
         <div className="relative p-10 pb-16">
           <p className="eyebrow eyebrow-night">{env.siteName}</p>
           <p className="display mt-5" style={{ fontSize: "clamp(3rem, 2rem + 3vw, 5rem)" }}>Learn.<br />Practice.<br />Test.<br /><span className="text-violet-300">Improve.</span></p>
@@ -32,7 +32,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ n
       </section>
       <section className="flex items-center justify-center px-5 py-12">
         <div className="rise w-full max-w-sm">
-          <Link href="/" className="mb-10 flex lg:hidden"><span className="rounded-xl bg-night px-3 py-2"><Logo name={env.siteName} /></span></Link>
+          <Link href="/" className="mb-10 flex lg:hidden"><Logo name={env.siteName} className="h-14" /></Link>
           <h1 className="h1" style={{ fontSize: "2.25rem" }}>Welcome back</h1>
           <p className="mb-8 mt-2 text-ink-3">Log in to continue your preparation.</p>
           {error === "blocked" && <div className="mb-4"><Notice tone="error">This account has been suspended.</Notice></div>}

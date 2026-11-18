@@ -3,7 +3,7 @@ import { Loading, Sk } from "@/components/skeleton";
 export default function AppLoading() {
   return (
     <>
-      <div className="h-16 bg-night" />
+      <div className="h-[4.5rem] bg-night" />
       <main className="mx-auto max-w-[90rem] px-4 py-14 sm:px-10">
         <Loading />
         <Sk className="h-3 w-24" /><Sk className="mt-4 h-12 w-72" />

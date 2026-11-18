@@ -29,8 +29,8 @@ export function HeaderClient({ name, signedIn, staff, showExams = false, initial
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-white/85 backdrop-blur-md supports-[backdrop-filter]:bg-white/75">
-      <div className="mx-auto flex h-16 max-w-[90rem] items-center justify-between gap-4 px-4 sm:px-10">
-        <Link href={signedIn ? "/app" : "/"} aria-label={`${name} home`} className="flex h-11 items-center"><Logo name={name} light /></Link>
+      <div className="mx-auto flex h-[4.5rem] max-w-[90rem] items-center justify-between gap-4 px-4 sm:px-10">
+        <Link href={signedIn ? "/app" : "/"} aria-label={`${name} home`} className="flex items-center"><Logo name={name} className="h-14" /></Link>
 
         <nav aria-label="Main" className="hidden h-full items-stretch gap-1 md:flex">
           {LINKS.map((l) => (

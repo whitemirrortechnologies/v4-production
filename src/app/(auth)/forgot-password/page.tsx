@@ -14,7 +14,7 @@ export default async function Page() {
   return (
     <main className="flex min-h-dvh items-center justify-center px-5 py-12">
       <div className="rise w-full max-w-sm">
-        <Link href="/" className="mb-10 inline-flex rounded-xl bg-night px-3 py-2"><Logo name={env.siteName} /></Link>
+        <Link href="/" className="mb-10 inline-flex"><Logo name={env.siteName} className="h-14" /></Link>
         <h1 className="h1" style={{ fontSize: "2.25rem" }}>Reset your password</h1>
         <p className="mb-8 mt-2 text-ink-3">We'll email you a link to set a new one.</p>
         <SimpleAuthForm action={requestReset} kind="forgot" />

@@ -18,7 +18,7 @@ export async function SiteFooter() {
     <footer className="border-t border-night-line bg-night text-night-ink">
       <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-10 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr] md:py-14 grid-cols-2">
         <div className="col-span-2 md:col-span-1">
-          <Logo name={env.siteName} />
+          <Logo name={env.siteName} full className="h-28" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for {info?.label ?? "your exam"}. Learn, practise, test and improve.</p>
         </div>
         <nav aria-label="Explore" className="flex flex-col gap-3 text-sm">
