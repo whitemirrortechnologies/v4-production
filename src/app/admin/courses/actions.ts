@@ -41,9 +41,40 @@ export async function updateCourse(f: FormData): Promise<Result> {
   return { ok: status === "published" ? "Saved · live for students" : "Saved" };
 }
 
+
+/** Removes the video/notes files of every lecture in `lectureRows` from Storage (the DB cascade doesn't touch files). */
+async function removeLectureFiles(supabase: Awaited<ReturnType<typeof createClient>>, rows: { video_path: string | null; notes_path: string | null }[] | null) {
+  const videos = (rows ?? []).map((r) => r.video_path).filter((x): x is string => !!x);
+  const notes = (rows ?? []).map((r) => r.notes_path).filter((x): x is string => !!x);
+  if (videos.length) await supabase.storage.from("lecture-videos").remove(videos);
+  if (notes.length) await supabase.storage.from("lecture-notes").remove(notes);
+}
+
+/** Lecture ids under a subject, module or chapter (walks down the tree). */
+async function lectureIdsUnder(supabase: Awaited<ReturnType<typeof createClient>>, table: "course_subjects" | "course_modules" | "course_chapters", id: string): Promise<string[]> {
+  let chapterIds: string[] = [];
+  if (table === "course_chapters") chapterIds = [id];
+  else {
+    let moduleIds = [id];
+    if (table === "course_subjects") {
+      const { data } = await supabase.from("course_modules").select("id").eq("subject_id", id);
+      moduleIds = (data ?? []).map((m) => m.id);
+    }
+    if (moduleIds.length) {
+      const { data } = await supabase.from("course_chapters").select("id").in("module_id", moduleIds);
+      chapterIds = (data ?? []).map((c) => c.id);
+    }
+  }
+  if (!chapterIds.length) return [];
+  const { data } = await supabase.from("lectures").select("id").in("chapter_id", chapterIds);
+  return (data ?? []).map((l) => l.id);
+}
+
 export async function deleteCourse(f: FormData): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
+  const { data: files } = await supabase.from("lectures").select("video_path, notes_path").eq("course_id", str(f, "id"));
+  await removeLectureFiles(supabase, files);
   const { error } = await supabase.from("courses").delete().eq("id", str(f, "id"));
   if (error) return E(error);
   refresh("/admin/courses");
@@ -114,8 +145,14 @@ export async function deleteNode(f: FormData): Promise<Result> {
   const supabase = await createClient();
   if (table === "lectures") {
     const { data: lec } = await supabase.from("lectures").select("video_path, notes_path").eq("id", str(f, "id")).single();
-    if (lec?.video_path) await supabase.storage.from("lecture-videos").remove([lec.video_path]);
-    if (lec?.notes_path) await supabase.storage.from("lecture-notes").remove([lec.notes_path]);
+    await removeLectureFiles(supabase, lec ? [lec] : []);
+  } else {
+    // Deleting a subject/module/chapter also deletes the lectures below it: remove their files too.
+    const ids = await lectureIdsUnder(supabase, table, str(f, "id"));
+    if (ids.length) {
+      const { data: files } = await supabase.from("lectures").select("video_path, notes_path").in("id", ids);
+      await removeLectureFiles(supabase, files);
+    }
   }
   const { error } = await supabase.from(table).delete().eq("id", str(f, "id"));
   if (error) return E(error);

@@ -124,6 +124,9 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
 
       {tab === "curriculum" && (
         <div className="max-w-4xl space-y-5">
+          <p className="rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-900">
+            <span className="font-semibold">How to add a video:</span> Subject → Module → Chapter → <span className="font-semibold">Lecture</span>. Add a lecture inside a chapter, then open it to upload the video and notes. Publish the lecture, then publish the course under <span className="font-semibold">Details</span>.
+          </p>
           {tree.map((s) => (
             <Card key={s.id} className="p-4 sm:p-5">
               <div className="group/row flex items-center gap-1">
@@ -132,6 +135,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
                 <Tools t="course_subjects" id={s.id} c={id} what="subject" />
               </div>
               <div className="mt-2 space-y-2">
+                {s.modules.length === 0 && <p className="px-1 text-sm text-ink-3">Next: add a module below (for example “Basics”), then a chapter inside it, then your lectures.</p>}
                 {s.modules.map((m) => (
                   <div key={m.id} className="rounded-xl border border-line bg-wash/50">
                     <div className="group/row flex items-center gap-1 px-2 py-1.5">
@@ -141,6 +145,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
                       <Tools t="course_modules" id={m.id} c={id} what="module" />
                     </div>
                     <div className="space-y-3 border-t border-line bg-paper px-3 py-3 sm:px-4">
+                      {m.chapters.length === 0 && <p className="text-sm text-ink-3">Next: add a chapter, then add lectures inside it.</p>}
                       {m.chapters.map((c) => (
                         <div key={c.id}>
                           <div className="group/row flex items-center gap-1">
