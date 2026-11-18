@@ -110,7 +110,7 @@ export default async function Dashboard() {
                 return (
                   <div key={course.id} data-reveal style={delay((i % 3) * 70)}><Link href={`/app/learn/${course.slug}${p?.last ? `/${p.last}` : ""}`}
                     className="lift group block h-full overflow-hidden rounded-2xl border border-line bg-paper">
-                    <CourseArt title={course.title} slug={course.slug} tag={examCode(course.exam_id)} className="aspect-[16/7]" />
+                    <CourseArt title={course.title} slug={course.slug} tag={examCode(course.exam_id)} thumbnailPath={course.thumbnail_path} className="aspect-[16/7]" />
                     <div className="p-5">
                       <p className="font-display text-lg font-bold tracking-tight">{course.title}</p>
                       <p className="mt-1 text-sm text-ink-3">{doneN} of {total} lectures · {duration(s?.total_duration_seconds)}{expires && ` · until ${new Date(expires).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}</p>

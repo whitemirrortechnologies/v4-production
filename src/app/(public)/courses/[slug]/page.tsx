@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Badge, Card, Eyebrow, LinkButton } from "@/components/ui";
+import { CourseArt } from "@/components/course-art";
 import { IconChevron, IconLock, IconPlay, IconCheck } from "@/components/icons";
 import { getCourseBySlug, getCurriculum, getMine, priceOf } from "@/lib/catalog";
 import { getViewer } from "@/lib/auth";
@@ -37,6 +38,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
             </dl>
           </div>
           <Card className="h-fit border-night-line bg-white p-6 text-ink shadow-lift lg:sticky lg:top-24">
+            {course.thumbnail_path && <CourseArt title={course.title} slug={course.slug} tag={course.exam.code.split("_")[0]} thumbnailPath={course.thumbnail_path} className="-mx-6 -mt-6 mb-5 aspect-[16/9] rounded-t-2xl" />}
             <p className="font-display text-4xl font-bold tracking-tight">
               {price == null ? "Not on sale" : rupees(price)}
               {sale && <span className="ml-2 text-base font-normal text-ink-3 line-through">{rupees(course.product!.price_paise)}</span>}

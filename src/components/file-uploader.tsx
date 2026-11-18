@@ -7,11 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 import { env } from "@/lib/env";
 import { toast } from "@/lib/toast";
 import { IconUpload } from "@/components/icons";
-import { recordNotes, recordVideo } from "@/app/admin/courses/actions";
+import { recordNotes, recordThumbnail, recordVideo } from "@/app/admin/courses/actions";
 
 const KINDS = {
   video: { bucket: "lecture-videos", max: 50, types: ["video/mp4", "video/webm"], accept: "video/mp4,video/webm", label: "video", hint: "MP4 (H.264/AAC) or WebM, up to 50 MB. Best: 720p, ~1 Mbps, “fast start” on." },
   notes: { bucket: "lecture-notes", max: 20, types: ["application/pdf"], accept: "application/pdf", label: "PDF", hint: "PDF, up to 20 MB." },
+  thumbnail: { bucket: "thumbnails", max: 5, types: ["image/png", "image/jpeg", "image/webp"], accept: "image/png,image/jpeg,image/webp", label: "image", hint: "Wide images look best (16:9, for example 1280×720). PNG, JPG or WebP, up to 5 MB." },
 } as const;
 
 function readDuration(file: File): Promise<number> {
@@ -64,7 +65,7 @@ export function FileUploader({ kind, lectureId, courseId, hasFile }: { kind: key
       }
       const { data } = await createClient().auth.getSession();
       if (!data.session) throw new Error("Your session expired. Please sign in again.");
-      const ext = file.type === "video/webm" ? "webm" : file.type === "application/pdf" ? "pdf" : "mp4";
+      const ext = ({ "video/webm": "webm", "application/pdf": "pdf", "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" } as Record<string, string>)[file.type] ?? "mp4";
       const path = `${lectureId}/${crypto.randomUUID()}.${ext}`;
       setProgress(0);
       await new Promise<void>((resolve, reject) => {
@@ -80,6 +81,7 @@ export function FileUploader({ kind, lectureId, courseId, hasFile }: { kind: key
       });
       const r = kind === "video"
         ? await recordVideo({ lectureId, courseId, path, size: file.size, durationSeconds: duration })
+        : kind === "thumbnail" ? await recordThumbnail({ courseId, path })
         : await recordNotes({ lectureId, courseId, path });
       if (r?.error) throw new Error(r.error);
       toast(kind === "video" ? "Video uploaded. Now publish the lecture so students can see it." : (r?.ok ?? "Uploaded"));

@@ -8,7 +8,9 @@ import { Badge, Card, Input, Label, LinkButton, Select, Textarea } from "@/compo
 import { ActionForm, IconSubmit, InlineEdit, Submit } from "@/components/forms";
 import { IconDown, IconPlus, IconTrash, IconUp, IconVideo, IconChevron } from "@/components/icons";
 import type { Course, Product } from "@/lib/types";
-import { addLecture, addNode, deleteCourse, deleteNode, moveNode, publishAllLectures, renameNode, savePricing, setCourseStatus, setLectureStatus, updateCourse } from "../actions";
+import { addLecture, addNode, deleteCourse, deleteNode, moveNode, publishAllLectures, removeThumbnail, renameNode, savePricing, setCourseStatus, setLectureStatus, updateCourse } from "../actions";
+import { FileUploader } from "@/components/file-uploader";
+import { CourseArt } from "@/components/course-art";
 import { clock, duration } from "@/lib/format";
 
 export const metadata = { title: "Edit course · Admin" };
@@ -80,6 +82,24 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
             className={clsx("-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold", tab === k ? "border-violet-500 text-ink" : "border-transparent text-ink-3 hover:text-ink")}>{label}</Link>
         ))}
       </nav>
+
+      {tab === "details" && (
+        <Card className="mb-6 max-w-3xl p-6">
+          <h2 className="font-display text-lg font-bold tracking-tight">Thumbnail</h2>
+          <p className="mb-5 mt-1 text-sm text-ink-3">The picture students see on the course card. Without one, a generated cover is used.</p>
+          <div className="grid gap-5 sm:grid-cols-[16rem_1fr] sm:items-start">
+            <CourseArt title={course.title} slug={course.slug} tag="CAT" thumbnailPath={course.thumbnail_path} className="aspect-[16/9] overflow-hidden rounded-xl border border-line" />
+            <div>
+              <FileUploader kind="thumbnail" lectureId={course.id} courseId={course.id} hasFile={!!course.thumbnail_path} />
+              {course.thumbnail_path && (
+                <ActionForm action={removeThumbnail} confirm="Remove the thumbnail? The generated cover will be used instead." confirmLabel="Remove" className="mt-3">
+                  <input type="hidden" name="course_id" value={course.id} /><Submit size="sm" variant="danger">Remove thumbnail</Submit>
+                </ActionForm>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {tab === "details" && (
         <Card className="max-w-3xl p-6">

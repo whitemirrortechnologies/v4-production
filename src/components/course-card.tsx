@@ -11,7 +11,7 @@ export function CourseCard({ course, enrolled, progress }: { course: CatalogCour
   return (
     <Link href={enrolled ? `/app/learn/${course.slug}${progress?.last ? `/${progress.last}` : ""}` : `/courses/${course.slug}`}
       className="lift group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-paper hover:border-line-strong">
-      <CourseArt title={course.title} slug={course.slug} tag={tag} className="aspect-[16/9]" />
+      <CourseArt title={course.title} slug={course.slug} tag={tag} thumbnailPath={course.thumbnail_path} className="aspect-[16/9]" />
       <div className="flex flex-1 flex-col p-5">
         <p className="text-xs font-semibold text-ink-3">{course.exam.name === tag ? course.exam.name : <>{tag} <span className="px-1">·</span> {course.exam.name}</>}</p>
         <h3 className="mt-2 text-lg font-bold leading-snug tracking-tight">{course.title}</h3>

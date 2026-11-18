@@ -1,9 +1,20 @@
 import { courseCode } from "@/lib/course-code";
+import { thumbnailUrl } from "@/lib/media";
 
 const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 /** Generated cover: black, concentric rings or tilted squares, one indigo dot. Stable per course. */
-export function CourseArt({ title, slug, tag, className = "" }: { title: string; slug: string; tag: string; className?: string }) {
+export function CourseArt({ title, slug, tag, className = "", thumbnailPath }: { title: string; slug: string; tag: string; className?: string; thumbnailPath?: string | null }) {
+  const photo = thumbnailUrl(thumbnailPath);
+  if (photo) {
+    return (
+      <div className={`relative isolate overflow-hidden bg-wash ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={photo} alt={title} loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" />
+        <span className="absolute left-3.5 top-3.5 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur-sm">{tag}</span>
+      </div>
+    );
+  }
   const h = hash(slug);
   const rings = h % 2 === 0;
   const cx = 62 + (h % 5) * 5, cy = 38 + (h % 4) * 6;

@@ -73,6 +73,8 @@ async function lectureIdsUnder(supabase: Awaited<ReturnType<typeof createClient>
 export async function deleteCourse(f: FormData): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
+  const { data: cover } = await supabase.from("courses").select("thumbnail_path").eq("id", str(f, "id")).maybeSingle();
+  if (cover?.thumbnail_path) await supabase.storage.from("thumbnails").remove([cover.thumbnail_path]);
   const { data: files } = await supabase.from("lectures").select("video_path, notes_path").eq("course_id", str(f, "id"));
   await removeLectureFiles(supabase, files);
   const { error } = await supabase.from("courses").delete().eq("id", str(f, "id"));
@@ -303,4 +305,28 @@ export async function removeNotes(f: FormData): Promise<Result> {
   if (error) return E(error);
   refresh(page(courseId), `${page(courseId)}/lectures/${id}`);
   return { ok: "Notes removed" };
+}
+
+/** Called by the browser after a course thumbnail was uploaded directly to Storage. */
+export async function recordThumbnail(input: { courseId: string; path: string }): Promise<Result> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data: old } = await supabase.from("courses").select("thumbnail_path").eq("id", input.courseId).single();
+  const { error } = await supabase.from("courses").update({ thumbnail_path: input.path }).eq("id", input.courseId);
+  if (error) return E(error);
+  if (old?.thumbnail_path && old.thumbnail_path !== input.path) await supabase.storage.from("thumbnails").remove([old.thumbnail_path]);
+  refresh(page(input.courseId), "/admin/courses", "/courses", "/", "/app");
+  return { ok: "Thumbnail saved" };
+}
+
+export async function removeThumbnail(f: FormData): Promise<Result> {
+  await requireStaff();
+  const id = str(f, "course_id");
+  const supabase = await createClient();
+  const { data: c } = await supabase.from("courses").select("thumbnail_path").eq("id", id).single();
+  if (c?.thumbnail_path) await supabase.storage.from("thumbnails").remove([c.thumbnail_path]);
+  const { error } = await supabase.from("courses").update({ thumbnail_path: null }).eq("id", id);
+  if (error) return E(error);
+  refresh(page(id), "/admin/courses", "/courses", "/", "/app");
+  return { ok: "Thumbnail removed" };
 }
