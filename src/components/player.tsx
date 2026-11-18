@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { saveProgress } from "@/app/app/actions";
 import { clock } from "@/lib/format";
-import { IconBack10, IconExpand, IconFwd10, IconMute, IconPause, IconPlay, IconVolume } from "@/components/icons";
+import { IconBack10, IconExpand, IconFwd10, IconMute, IconPause, IconPlay, IconSpinner, IconVolume } from "@/components/icons";
 
 const RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
@@ -26,6 +26,7 @@ export function Player({ src, lectureId, startAt, nextHref, nextTitle }: {
   const [ui, setUi] = useState(true);
   const [rateOpen, setRateOpen] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [waiting, setWaiting] = useState(false);
   const [resumed, setResumed] = useState(false);
 
   const flush = useCallback(() => {
@@ -82,7 +83,7 @@ export function Player({ src, lectureId, startAt, nextHref, nextTitle }: {
   return (
     <div ref={box} tabIndex={0} onKeyDown={onKey} onMouseMove={poke} onTouchStart={poke}
       className={clsx("group relative aspect-video w-full select-none overflow-hidden rounded-2xl bg-black outline-none [&:fullscreen]:rounded-none", !show && "cursor-none")}>
-      <video ref={video} src={src} className="size-full" playsInline preload="metadata"
+      <video ref={video} src={src} className="size-full" playsInline preload="auto"
         onContextMenu={(e) => e.preventDefault()} onClick={toggle} onDoubleClick={fullscreen}
         onLoadedMetadata={(e) => {
           const v = e.currentTarget; setDur(v.duration);
@@ -94,10 +95,17 @@ export function Player({ src, lectureId, startAt, nextHref, nextTitle }: {
           last.current = now; setT(now);
         }}
         onProgress={(e) => { const v = e.currentTarget; if (v.buffered.length) setBuf(v.buffered.end(v.buffered.length - 1)); }}
+        onWaiting={() => setWaiting(true)} onCanPlay={() => setWaiting(false)} onPlaying={() => setWaiting(false)}
         onPlay={() => { setPlaying(true); poke(); }} onPause={() => { setPlaying(false); setUi(true); flush(); }}
         onEnded={() => { setPlaying(false); setEnded(true); flush(); }}
         onVolumeChange={(e) => { setMuted(e.currentTarget.muted); setVol(e.currentTarget.volume); }}
       />
+
+      {waiting && playing && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-live="polite">
+          <span className="flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 text-xs font-medium text-white"><IconSpinner size={14} /> Loading…</span>
+        </div>
+      )}
 
       {resumed && <div className="rise pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-black/70 px-4 py-1.5 text-xs font-medium text-white">Resumed from {clock(startAt)}</div>}
 

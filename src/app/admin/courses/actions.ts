@@ -192,6 +192,41 @@ export async function addLecture(f: FormData): Promise<Result> {
   redirect(`${page(courseId)}/lectures/${data.id}`);
 }
 
+/** One-click publish / unpublish for a single lecture. */
+export async function setLectureStatus(f: FormData): Promise<Result> {
+  await requireStaff();
+  const courseId = str(f, "course_id"), id = str(f, "id"), status = str(f, "status");
+  if (!["draft", "published", "archived"].includes(status)) return { error: "Unknown status" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("lectures").update({ status }).eq("id", id);
+  if (error) return E(error);
+  refresh(page(courseId), `${page(courseId)}/lectures/${id}`, "/courses");
+  return { ok: status === "published" ? "Lecture is live for students" : "Lecture hidden from students" };
+}
+
+/** Publish every draft lecture in a course at once. */
+export async function publishAllLectures(f: FormData): Promise<Result> {
+  await requireStaff();
+  const courseId = str(f, "course_id");
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("lectures").update({ status: "published" }).eq("course_id", courseId).eq("status", "draft").select("id");
+  if (error) return E(error);
+  refresh(page(courseId), "/courses");
+  return { ok: data?.length ? `${data.length} lecture${data.length === 1 ? "" : "s"} published` : "Nothing to publish" };
+}
+
+/** One-click publish / unpublish for the whole course. */
+export async function setCourseStatus(f: FormData): Promise<Result> {
+  await requireStaff();
+  const id = str(f, "id"), status = str(f, "status");
+  if (!["draft", "published", "archived"].includes(status)) return { error: "Unknown status" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("courses").update({ status }).eq("id", id);
+  if (error) return E(error);
+  refresh(page(id), "/admin/courses", "/courses", "/");
+  return { ok: status === "published" ? "Course is live for students" : "Course hidden from students" };
+}
+
 export async function updateLecture(f: FormData): Promise<Result> {
   await requireStaff();
   const courseId = str(f, "course_id"), id = str(f, "id");

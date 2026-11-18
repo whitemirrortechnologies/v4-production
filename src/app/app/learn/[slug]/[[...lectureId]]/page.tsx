@@ -28,6 +28,7 @@ export default async function LearnPage({ params }: { params: Promise<{ slug: st
   const done = new Set((prog ?? []).filter((p) => p.completed_at).map((p) => p.lecture_id));
 
   const flat = tree.flatMap((s) => s.modules.flatMap((m) => m.chapters.flatMap((c) => c.lectures.filter((l) => l.status === "published").map((l) => ({ ...l, chapter: c.title, module: m.title })))));
+  const draftCount = tree.flatMap((s) => s.modules.flatMap((m) => m.chapters.flatMap((c) => c.lectures))).filter((l) => l.status !== "published").length;
   const canOpen = (l: { is_free_preview: boolean }) => enrolled || l.is_free_preview;
   const lastWatched = [...(prog ?? [])].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).find((p) => flat.some((l) => l.id === p.lecture_id && canOpen(l)));
   const currentId = lectureId?.[0] ?? lastWatched?.lecture_id ?? flat.find(canOpen)?.id ?? flat[0]?.id;
@@ -90,7 +91,15 @@ export default async function LearnPage({ params }: { params: Promise<{ slug: st
               {course.product && <LinkButton href={`/checkout/${course.product.id}`} variant="inverse" size="lg" className="relative mt-6">Enroll now</LinkButton>}
             </div>
           ) : (
-            <div className="rounded-2xl border border-line p-10 text-center text-ink-3">No lectures have been published for this course yet.</div>
+            <div className="rounded-2xl border border-line p-10 text-center text-ink-3">
+              <p>No lectures have been published for this course yet.</p>
+              {viewer.profile.role !== "student" && draftCount > 0 && (
+                <p className="mt-3 text-sm">
+                  <span className="font-semibold text-ink">{draftCount} draft lecture{draftCount === 1 ? "" : "s"}</span> {draftCount === 1 ? "is" : "are"} hidden from students.{" "}
+                  <Link href={`/admin/courses/${course.id}`} className="font-semibold text-violet-600 underline-offset-4 hover:underline">Publish {draftCount === 1 ? "it" : "them"} in the admin console</Link>.
+                </p>
+              )}
+            </div>
           )}
         </main>
 

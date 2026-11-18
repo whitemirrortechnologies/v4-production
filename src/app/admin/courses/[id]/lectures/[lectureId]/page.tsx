@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge, Card, Input, Label, Select, Textarea } from "@/components/ui";
 import { ActionForm, Submit } from "@/components/forms";
 import { FileUploader } from "@/components/file-uploader";
-import { removeNotes, removeVideo, updateLecture } from "../../../actions";
+import { removeNotes, removeVideo, setLectureStatus, updateLecture } from "../../../actions";
 import { bytes, clock } from "@/lib/format";
 import type { Lecture } from "@/lib/types";
 
@@ -30,6 +30,21 @@ export default async function LecturePage({ params }: { params: Promise<{ id: st
         <h1 className="h2">{lec.title}</h1>
         <Badge tone={lec.status === "published" ? "good" : "neutral"}>{lec.status === "published" ? "Live" : lec.status}</Badge>
         {lec.is_free_preview && <Badge tone="violet">Free preview</Badge>}
+      </div>
+
+      <div className={`mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${lec.status === "published" ? "border-good/30 bg-good/5" : "border-amber-300/60 bg-amber-50"}`}>
+        <div>
+          <p className="font-semibold">{lec.status === "published" ? "Live: students can watch this lecture" : "Draft: students can’t see this lecture yet"}</p>
+          <p className="mt-0.5 text-sm text-ink-3">
+            {lec.status === "published"
+              ? "It also needs the course itself to be published."
+              : lec.video_status === "ready" ? "Your video is uploaded. Publish it when you’re ready." : "Upload the video below, then publish."}
+          </p>
+        </div>
+        <ActionForm action={setLectureStatus}>
+          {hidden}<input type="hidden" name="status" value={lec.status === "published" ? "draft" : "published"} />
+          <Submit variant={lec.status === "published" ? "outline" : "violet"}>{lec.status === "published" ? "Hide from students" : "Publish lecture"}</Submit>
+        </ActionForm>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">

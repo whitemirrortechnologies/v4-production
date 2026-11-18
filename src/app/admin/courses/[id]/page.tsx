@@ -8,7 +8,7 @@ import { Badge, Card, Input, Label, LinkButton, Select, Textarea } from "@/compo
 import { ActionForm, IconSubmit, InlineEdit, Submit } from "@/components/forms";
 import { IconDown, IconPlus, IconTrash, IconUp, IconVideo, IconChevron } from "@/components/icons";
 import type { Course, Product } from "@/lib/types";
-import { addLecture, addNode, deleteCourse, deleteNode, moveNode, renameNode, savePricing, updateCourse } from "../actions";
+import { addLecture, addNode, deleteCourse, deleteNode, moveNode, publishAllLectures, renameNode, savePricing, setCourseStatus, setLectureStatus, updateCourse } from "../actions";
 import { clock, duration } from "@/lib/format";
 
 export const metadata = { title: "Edit course · Admin" };
@@ -55,6 +55,7 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
   if (!course) notFound();
   const lectures = tree.flatMap((s) => s.modules.flatMap((m) => m.chapters.flatMap((c) => c.lectures)));
   const total = lectures.reduce((n, l) => n + (l.duration_seconds ?? 0), 0);
+  const draftLectures = lectures.filter((l) => l.status === "draft");
 
   const tabs = [["curriculum", "Curriculum"], ["details", "Details"], ...(isAdmin ? [["pricing", "Pricing"]] : [])];
 
@@ -124,9 +125,28 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
 
       {tab === "curriculum" && (
         <div className="max-w-4xl space-y-5">
-          <p className="rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-900">
-            <span className="font-semibold">How to add a video:</span> Subject → Module → Chapter → <span className="font-semibold">Lecture</span>. Add a lecture inside a chapter, then open it to upload the video and notes. Publish the lecture, then publish the course under <span className="font-semibold">Details</span>.
-          </p>
+          {(course.status !== "published" || draftLectures.length > 0) && (
+            <div className="space-y-2 rounded-2xl border border-amber-300/60 bg-amber-50 p-4 text-sm text-amber-950">
+              <p className="font-semibold">Students can’t see everything yet</p>
+              {course.status !== "published" && (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p>This course is a <b>{course.status}</b>, so it is hidden from students.</p>
+                  <ActionForm action={setCourseStatus}><input type="hidden" name="id" value={course.id} /><input type="hidden" name="status" value="published" /><Submit size="sm" variant="violet">Publish course</Submit></ActionForm>
+                </div>
+              )}
+              {draftLectures.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p><b>{draftLectures.length}</b> lecture{draftLectures.length === 1 ? " is" : "s are"} still draft (grey “draft” tag below). Students only see published lectures.</p>
+                  <ActionForm action={publishAllLectures}><input type="hidden" name="course_id" value={course.id} /><Submit size="sm" variant="violet">Publish {draftLectures.length === 1 ? "lecture" : "all lectures"}</Submit></ActionForm>
+                </div>
+              )}
+            </div>
+          )}
+          {tree.length === 0 && (
+            <p className="rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-900">
+              <span className="font-semibold">Start here:</span> add a subject, then a module and a chapter inside it. Lectures (with the video) live inside a chapter.
+            </p>
+          )}
           {tree.map((s) => (
             <Card key={s.id} className="p-4 sm:p-5">
               <div className="group/row flex items-center gap-1">
@@ -160,9 +180,11 @@ export default async function EditCourse({ params, searchParams }: { params: Pro
                                 <Link href={`/admin/courses/${id}/lectures/${l.id}`} className="min-w-0 flex-1 truncate py-1.5 text-sm hover:underline">{l.title}</Link>
                                 <span className="hidden items-center gap-1.5 sm:flex">
                                   {l.is_free_preview && <Badge tone="violet">Free</Badge>}
-                                  {l.status !== "published" && <Badge>{l.status}</Badge>}
                                   <span className="w-14 text-right text-xs tabular-nums text-ink-3">{l.video_status === "ready" ? clock(l.duration_seconds ?? 0) : "—"}</span>
                                 </span>
+                                {l.status === "published"
+                                  ? <Badge tone="good">Live</Badge>
+                                  : <ActionForm action={setLectureStatus}><input type="hidden" name="id" value={l.id} /><input type="hidden" name="course_id" value={id} /><input type="hidden" name="status" value="published" /><Submit size="sm" variant="violet" className="!h-7 !px-3">Publish</Submit></ActionForm>}
                                 <Tools t="lectures" id={l.id} c={id} what="lecture" />
                               </li>
                             ))}

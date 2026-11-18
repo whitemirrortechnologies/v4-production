@@ -24,6 +24,25 @@ function readDuration(file: File): Promise<number> {
   });
 }
 
+/** True when the MP4's index ("moov") comes before the video data, so playback can start without downloading the whole file. */
+async function isFastStart(file: File): Promise<boolean | null> {
+  if (file.type !== "video/mp4") return null; // WebM streams fine
+  try {
+    let off = 0;
+    for (let i = 0; i < 40 && off < file.size; i++) {
+      const head = new DataView(await file.slice(off, off + 16).arrayBuffer());
+      let size = head.getUint32(0);
+      const type = String.fromCharCode(head.getUint8(4), head.getUint8(5), head.getUint8(6), head.getUint8(7));
+      if (type === "moov") return true;
+      if (type === "mdat") return false;
+      if (size === 1) size = Number(head.getBigUint64(8));
+      if (size < 8) return null;
+      off += size;
+    }
+  } catch { /* unreadable header: don't warn */ }
+  return null;
+}
+
 /** Drag-and-drop uploader straight to Supabase Storage with real progress; refreshes the page when done. */
 export function FileUploader({ kind, lectureId, courseId, hasFile }: { kind: keyof typeof KINDS; lectureId: string; courseId: string; hasFile: boolean }) {
   const k = KINDS[kind];
@@ -37,6 +56,12 @@ export function FileUploader({ kind, lectureId, courseId, hasFile }: { kind: key
     if (file.size > k.max * 1048576) return toast(`This file is ${(file.size / 1048576).toFixed(1)} MB. The limit is ${k.max} MB.`, "error");
     try {
       const duration = kind === "video" ? await readDuration(file) : 0;
+      if (kind === "video") {
+        const mbps = duration > 0 ? (file.size * 8) / duration / 1e6 : 0;
+        if ((await isFastStart(file)) === false)
+          toast("This MP4 isn’t set up for streaming, so students may wait before it starts. Re-export with “Fast start / web optimized” (HandBrake: tick “Web optimized”).", "error");
+        else if (mbps > 3) toast(`This video is about ${mbps.toFixed(1)} Mbps, which is heavy for phones. 720p at ~1 Mbps plays much more smoothly.`, "error");
+      }
       const { data } = await createClient().auth.getSession();
       if (!data.session) throw new Error("Your session expired. Please sign in again.");
       const ext = file.type === "video/webm" ? "webm" : file.type === "application/pdf" ? "pdf" : "mp4";
@@ -57,7 +82,7 @@ export function FileUploader({ kind, lectureId, courseId, hasFile }: { kind: key
         ? await recordVideo({ lectureId, courseId, path, size: file.size, durationSeconds: duration })
         : await recordNotes({ lectureId, courseId, path });
       if (r?.error) throw new Error(r.error);
-      toast(r?.ok ?? "Uploaded");
+      toast(kind === "video" ? "Video uploaded. Now publish the lecture so students can see it." : (r?.ok ?? "Uploaded"));
       router.refresh();
     } catch (e) {
       toast(e instanceof Error ? e.message : "Upload failed", "error");
