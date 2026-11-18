@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
-/* ---------- Design tokens (from the V4 reference): black, white, one indigo accent ---------- */
+/* ---------- Design tokens: deep navy + indigo-tinted light surfaces, one indigo accent ---------- */
 @theme {
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* light surfaces */
-  --color-ink: #050505;
-  --color-ink-2: #3a3a3a;
-  --color-ink-3: #666666;
-  --color-ink-4: #8a8a8a;
-  --color-line: #e5e5e5;
-  --color-line-strong: #d0d0d0;
-  --color-wash: #f5f5f5;
+  --color-ink: #0b1020;
+  --color-ink-2: #3b4160;
+  --color-ink-3: #5d6484;
+  --color-ink-4: #8d93ad;
+  --color-line: #e6e8f2;
+  --color-line-strong: #d6d9e8;
+  --color-wash: #f5f6fb;
   --color-paper: #ffffff;
 
   /* dark surfaces */
-  --color-night: #050505;
-  --color-night-2: #0a0a0a;
-  --color-night-3: #111111;
-  --color-night-4: #181818;
-  --color-night-line: #242424;
-  --color-night-line-2: #3a3a3a;
-  --color-night-ink: #a8a8a8;
-  --color-night-ink-2: #8a8a8a;
+  --color-night: #0b1020;
+  --color-night-2: #0f1530;
+  --color-night-3: #151b3a;
+  --color-night-4: #1b2247;
+  --color-night-line: #232b52;
+  --color-night-line-2: #343e6e;
+  --color-night-ink: #aab1d2;
+  --color-night-ink-2: #858dba;
 
   /* accent */
   --color-violet-50: #f1f0ff;
@@ -105,6 +105,17 @@ h1, h2, h3 { font-family: var(--font-display); }
     linear-gradient(to right, #ffffff0a 1px, transparent 1px),
     linear-gradient(to bottom, #ffffff0a 1px, transparent 1px);
 }
+
+/* Light hero: soft indigo wash with a faint dotted texture (static, zero scroll cost). */
+.hero-light {
+  background-image:
+    radial-gradient(40rem 22rem at 85% -10%, #635bff26, transparent 70%),
+    radial-gradient(30rem 18rem at 0% 0%, #a5a0ff1f, transparent 70%),
+    radial-gradient(#0b102014 1px, transparent 1px);
+  background-size: auto, auto, 22px 22px;
+  background-color: #f7f7ff;
+}
+.cta-band { background-image: radial-gradient(30rem 16rem at 90% 0%, #a5a0ff55, transparent 70%), linear-gradient(135deg, #4f46e5, #2b2680); }
 
 /* Long lists render only what's on screen. */
 .cv-auto { content-visibility: auto; contain-intrinsic-size: auto 96px; }

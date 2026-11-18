@@ -16,18 +16,18 @@ export async function SiteFooter() {
   const [viewer, info] = await Promise.all([getViewer().catch(() => null), getExamInfo().catch(() => null)]);
   return (
     <footer className="border-t border-night-line bg-night text-night-ink">
-      <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-14 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div>
+      <div className="mx-auto grid max-w-[90rem] gap-10 px-4 py-10 sm:px-10 md:grid-cols-[1.4fr_1fr_1fr] md:py-14 grid-cols-2">
+        <div className="col-span-2 md:col-span-1">
           <Logo name={env.siteName} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">A structured preparation system for {info?.label ?? "your exam"}. Learn, practise, test and improve.</p>
         </div>
-        <nav aria-label="Explore" className="flex flex-col gap-4 text-sm">
+        <nav aria-label="Explore" className="flex flex-col gap-3 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Explore</p>
           {info && !info.single && <Link className="tap hover:text-white" href="/exams">Exams</Link>}
           <Link className="tap hover:text-white" href="/courses">Courses</Link>
           {info?.exams.map((e) => <Link key={e.id} className="tap hover:text-white" href={`/exams/${e.code.toLowerCase()}`}>{e.code.split("_")[0]}</Link>)}
         </nav>
-        <nav aria-label="Account" className="flex flex-col gap-4 text-sm">
+        <nav aria-label="Account" className="flex flex-col gap-3 text-sm">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-night-ink-2">Account</p>
           {viewer ? (
             <>
